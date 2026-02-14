@@ -1,0 +1,388 @@
+<div class="form-container">
+    <div class="header">
+        <h1>Huella de Carbono</h1>
+        <p class="subtitle">Formulario de Registro</p>
+    </div>
+
+    <div class="main-inputs">
+        <mat-form-field appearance="outline">
+            <mat-label>Empresa</mat-label>
+            <mat-select [(ngModel)]="selectedCompany" (selectionChange)="onCompanyChange($event.value)">
+                <mat-option *ngFor="let company of companies" [value]="company">
+                    {{ company.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Periodo (Año)</mat-label>
+            <mat-select [(ngModel)]="selectedPeriod">
+                <mat-option *ngFor="let period of periods" [value]="period">
+                    {{ period.year }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Nombre de huella (Oficina/Planta/Unidad operativa)</mat-label>
+            <input matInput [(ngModel)]="huella" placeholder="Ej: Planta Principal">
+        </mat-form-field>
+    </div>
+
+    <div class="scope-section">
+        <div class="divider">
+            <span>Medición de Alcance 1</span>
+        </div>
+
+        <!-- Scope 1 Accordion -->
+        <mat-accordion>
+            <mat-expansion-panel class="scope-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Alcance 1</mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <p class="description">
+                    Se refiere a las emisiones de GEI directas generadas dentro de la organización por fuentes fijas;
+                    procesos físicos o químicos; combustión en fuentes móviles; emisiones fugitivas, producción de
+                    metano por manejo de residuos orgánicos, y extracción, procesamiento y distribución de combustibles.
+                </p>
+
+                <!-- Mobile Sources Sub-Section -->
+                <div class="sub-section-title">Fuentes móviles</div>
+                <mat-accordion>
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Fuentes móviles</mat-panel-title>
+                        </mat-expansion-panel-header>
+
+                        <p class="description">
+                            Se identifican las fuentes móviles que generan emisiones directas...
+                        </p>
+
+                        <!-- Liquid Fuels -->
+                        <mat-expansion-panel class="input-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>Consumo de combustibles líquidos</mat-panel-title>
+                            </mat-expansion-panel-header>
+
+                            <div class="input-row">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Tipo de combustible</mat-label>
+                                    <mat-select [(ngModel)]="selectedLiquidFuel">
+                                        <mat-option *ngFor="let fuel of liquidFuels" [value]="fuel">
+                                            {{ fuel.name }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Consumo en el año</mat-label>
+                                    <input matInput type="number" [(ngModel)]="liquidFuelConsumption">
+                                    <span matSuffix>Galones</span>
+                                </mat-form-field>
+                            </div>
+                            <div class="action-row">
+                                <button mat-raised-button color="primary" (click)="addLiquidFuel()">Cargar</button>
+                            </div>
+                        </mat-expansion-panel>
+
+                        <!-- Gaseous Fuels -->
+                        <mat-expansion-panel class="input-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>Consumo de combustibles gaseosos (Fuentes Móviles)</mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <div class="input-row">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Tipo de combustible</mat-label>
+                                    <mat-select [(ngModel)]="selectedGaseousFuel">
+                                        <mat-option *ngFor="let fuel of gaseousFuels" [value]="fuel">
+                                            {{ fuel.name }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Consumo en el año</mat-label>
+                                    <input matInput type="number" [(ngModel)]="gaseousFuelConsumption">
+                                    <span matSuffix>Unidades</span>
+                                </mat-form-field>
+                            </div>
+                            <div class="action-row"><button mat-raised-button color="primary"
+                                    (click)="addGaseousFuel()">Cargar</button></div>
+                        </mat-expansion-panel>
+
+                        <!-- Refrigerants -->
+                        <mat-expansion-panel class="input-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>Consumo de refrigerantes (Fuentes Móviles)</mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <div class="input-row">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Tipo de refrigerante</mat-label>
+                                    <mat-select [(ngModel)]="selectedRefrigerant">
+                                        <mat-option *ngFor="let ref of refrigerants" [value]="ref">
+                                            {{ ref.name }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Consumo en el año</mat-label>
+                                    <input matInput type="number" [(ngModel)]="refrigerantConsumption">
+                                    <span matSuffix>kg</span>
+                                </mat-form-field>
+                            </div>
+                            <div class="action-row"><button mat-raised-button color="primary"
+                                    (click)="addRefrigerant()">Cargar</button></div>
+                        </mat-expansion-panel>
+
+                        <!-- Extinguishers -->
+                        <mat-expansion-panel class="input-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>Extintores (Fuentes Móviles)</mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <div class="input-row">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Tipo de Extintor</mat-label>
+                                    <mat-select [(ngModel)]="selectedExtinguisher">
+                                        <mat-option *ngFor="let ext of extinguishers" [value]="ext">
+                                            {{ ext.name }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Consumo en el año</mat-label>
+                                    <input matInput type="number" [(ngModel)]="extinguisherConsumption">
+                                </mat-form-field>
+                            </div>
+                            <div class="action-row"><button mat-raised-button color="primary"
+                                    (click)="addExtinguisher()">Cargar</button></div>
+                        </mat-expansion-panel>
+
+                        <!-- Lubricants -->
+                        <mat-expansion-panel class="input-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>Lubricantes (Fuentes Móviles)</mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <div class="input-row">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Tipo de lubricante</mat-label>
+                                    <mat-select [(ngModel)]="selectedLubricant">
+                                        <mat-option *ngFor="let lub of lubricants" [value]="lub">
+                                            {{ lub.name }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Consumo en el año</mat-label>
+                                    <input matInput type="number" [(ngModel)]="lubricantConsumption">
+                                </mat-form-field>
+                            </div>
+                            <div class="action-row"><button mat-raised-button color="primary"
+                                    (click)="addLubricant()">Cargar</button></div>
+                        </mat-expansion-panel>
+
+                    </mat-expansion-panel>
+                </mat-accordion>
+
+                <!-- Fixed Sources Sub-Section -->
+                <br>
+                <div class="sub-section-title">Fuentes fijas</div>
+                <mat-accordion>
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Combustibles Sólidos (Fuentes Fijas)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="input-row">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Tipo de combustible</mat-label>
+                                <mat-select [(ngModel)]="selectedFixedSolid">
+                                    <mat-option *ngFor="let fuel of fixedSolidFuels" [value]="fuel">
+                                        {{ fuel.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Consumo en el año</mat-label>
+                                <input matInput type="number" [(ngModel)]="fixedsolidFuelConsumption">
+                                <span matSuffix>Toneladas</span>
+                            </mat-form-field>
+                        </div>
+                        <div class="action-row"><button mat-raised-button color="primary"
+                                (click)="addFixedSolidFuel()">Cargar</button></div>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Combustibles Líquidos (Fuentes Fijas)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="input-row">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Tipo de combustible</mat-label>
+                                <mat-select [(ngModel)]="selectedFixedLiquid">
+                                    <mat-option *ngFor="let fuel of fixedLiquidFuels" [value]="fuel">
+                                        {{ fuel.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Consumo en el año</mat-label>
+                                <input matInput type="number" [(ngModel)]="fixedLiquidFuelConsumption">
+                                <span matSuffix>Galones</span>
+                            </mat-form-field>
+                        </div>
+                        <div class="action-row"><button mat-raised-button color="primary"
+                                (click)="addFixedLiquidFuel()">Cargar</button></div>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Combustibles Gaseosos (Fuentes Fijas)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="input-row">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Tipo de combustible</mat-label>
+                                <mat-select [(ngModel)]="selectedFixedGaseous">
+                                    <mat-option *ngFor="let fuel of fixedGaseousFuels" [value]="fuel">
+                                        {{ fuel.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Consumo en el año</mat-label>
+                                <input matInput type="number" [(ngModel)]="fixedGaseousFuelConsumption">
+                                <span matSuffix>Unidades</span>
+                            </mat-form-field>
+                        </div>
+                        <div class="action-row"><button mat-raised-button color="primary"
+                                (click)="addFixedGaseousFuel()">Cargar</button></div>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Refrigerantes (Fuentes Fijas)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="input-row">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Tipo de refrigerante</mat-label>
+                                <mat-select [(ngModel)]="selectedFixedRefrigerant">
+                                    <mat-option *ngFor="let ref of refrigerants" [value]="ref">
+                                        {{ ref.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Consumo en el año</mat-label>
+                                <input matInput type="number" [(ngModel)]="fixedRefrigerantConsumption">
+                                <span matSuffix>kg</span>
+                            </mat-form-field>
+                        </div>
+                        <div class="action-row"><button mat-raised-button color="primary"
+                                (click)="addFixedRefrigerant()">Cargar</button></div>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Extintores (Fuentes Fijas)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="input-row">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Tipo de extintor</mat-label>
+                                <mat-select [(ngModel)]="selectedFixedExtinguisher">
+                                    <mat-option *ngFor="let ext of extinguishers" [value]="ext">
+                                        {{ ext.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Consumo en el año</mat-label>
+                                <input matInput type="number" [(ngModel)]="fixedExtinguisherConsumption">
+                            </mat-form-field>
+                        </div>
+                        <div class="action-row"><button mat-raised-button color="primary"
+                                (click)="addFixedExtinguisher()">Cargar</button></div>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel class="sub-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Lubricantes (Fuentes Fijas)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="input-row">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Tipo de lubricante</mat-label>
+                                <mat-select [(ngModel)]="selectedFixedLubricant">
+                                    <mat-option *ngFor="let lub of lubricants" [value]="lub">
+                                        {{ lub.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Consumo en el año</mat-label>
+                                <input matInput type="number" [(ngModel)]="fixedLubricantConsumption">
+                            </mat-form-field>
+                        </div>
+                        <div class="action-row"><button mat-raised-button color="primary"
+                                (click)="addFixedLubricant()">Cargar</button></div>
+                    </mat-expansion-panel>
+                </mat-accordion>
+
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+
+    <br>
+    <div class="divider"><span>Medición de Alcance 2 & 3</span></div>
+
+    <mat-accordion>
+        <mat-expansion-panel class="scope-panel">
+            <mat-expansion-panel-header><mat-panel-title>Alcance 2
+                    (Electricidad)</mat-panel-title></mat-expansion-panel-header>
+            <div class="input-row">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Factor de Emisión (Red)</mat-label>
+                    <mat-select [(ngModel)]="selectedElectricityFactor">
+                        <mat-option *ngFor="let f of electricityFactors" [value]="f">
+                            {{ f.name }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Consumo Energía Eléctrica</mat-label>
+                    <input matInput type="number" [(ngModel)]="electricityConsumption">
+                    <span matSuffix>kWh</span>
+                </mat-form-field>
+            </div>
+            <div class="action-row"><button mat-raised-button color="primary" (click)="addElectricity()">Cargar</button>
+            </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel class="scope-panel">
+            <mat-expansion-panel-header><mat-panel-title>Alcance 3 (Otras
+                    Fuentes)</mat-panel-title></mat-expansion-panel-header>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Vuelos (km viajados)</mat-label>
+                <input matInput type="number" [(ngModel)]="flightKmTraveled">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Empleados Remotos</mat-label>
+                <input matInput type="number" [(ngModel)]="remoteEmployees">
+            </mat-form-field>
+
+            <div class="action-row"><button mat-raised-button color="primary" (click)="addScope3()">Cargar Alcance
+                    3</button></div>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <br>
+    <div class="action-row">
+        <button mat-raised-button color="accent" style="width: 100%; height: 50px; font-size: 18px;"
+            (click)="onSubmit()">CALCULAR HUELLA DE CARBONO</button>
+    </div>
+
+    <!-- Add button to check data -->
+    <div class="debug-section" *ngIf="scope1Data.length > 0">
+        <h3>Datos Cargados (Scope 1):</h3>
+        <pre>{{ scope1Data | json }}</pre>
+    </div>
+</div>

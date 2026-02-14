@@ -1,1 +1,119 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --prestige-bg: #fdfdfd;
+    --prestige-primary: #1a237e;
+    --prestige-primary-light: #534bae;
+    --prestige-accent: #00897b;
+    --prestige-text: #263238;
+    --prestige-text-muted: #546e7a;
+    --prestige-border: rgba(0, 0, 0, 0.08);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--prestige-bg);
+    color: var(--prestige-text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Glassmorphism Utilities */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+}
+
+/* Elegant Inputs Override - Sophisticated scaling */
+.mat-mdc-form-field {
+    --mdc-filled-tonal-container-color: transparent !important;
+    --mdc-outlined-idle-outline-color: rgba(0, 0, 0, 0.08) !important;
+    --mdc-outlined-hover-outline-color: var(--prestige-primary) !important;
+    --mdc-outlined-active-outline-color: var(--prestige-primary) !important;
+    font-size: 13px !important;
+}
+
+.mat-mdc-text-field-wrapper {
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding: 0 10px !important;
+    height: 40px !important;
+    /* Forces a much cleaner compact height */
+}
+
+/* Precise centering for the compact look */
+.mat-mdc-form-field-infix {
+    min-height: 40px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.mat-mdc-form-field-label-wrapper {
+    top: -1em !important;
+    padding-top: 1em !important;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper {
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.04) !important;
+}
+
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+    border-width: 1px !important;
+}
+
+/* Refined Premium Table */
+.prestige-table-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+}
+
+.mat-mdc-table {
+    background: transparent !important;
+}
+
+.mat-mdc-header-row {
+    background: #fafafa !important;
+}
+
+.mat-mdc-header-cell {
+    color: var(--prestige-text-muted) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 11px !important;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--prestige-border) !important;
+}
+
+.mat-mdc-cell {
+    color: var(--prestige-text) !important;
+    font-size: 13px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+}
+
+.mat-mdc-row:hover {
+    background-color: rgba(26, 35, 126, 0.02) !important;
+}
