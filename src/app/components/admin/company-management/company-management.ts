@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AdminService } from '../../../services/admin.service';
+import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
 
 @Component({
   selector: 'app-company-management',
@@ -149,10 +150,10 @@ import { AdminService } from '../../../services/admin.service';
     .table-wrapper { padding: 0; overflow: hidden; }
     
     .table-header { 
-      padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+      padding: 24px 24px 16px 24px; display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid var(--prestige-border); gap: 16px; flex-wrap: wrap;
     }
-    .search-field { width: 300px; margin-bottom: -1.25em; font-size: 13px; }
+    .search-field { width: 320px; margin-bottom: 16px; font-size: 13px; }
 
     .status-legend { display: flex; gap: 16px; font-size: 11px; color: var(--prestige-text-muted); }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -169,13 +170,13 @@ import { AdminService } from '../../../services/admin.service';
     }
     
     .prestige-row { transition: all 0.2s; }
-    .prestige-row:hover { background: #fcfcfd !important; cursor: pointer; }
+    .prestige-row:hover { background: var(--row-hover-bg) !important; cursor: pointer; }
 
     .company-info-cell { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
     .company-logo { 
-      width: 36px; height: 36px; border-radius: 10px; background: #e8eaf6; 
-      color: var(--prestige-primary); display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 16px; border: 1px solid rgba(26, 35, 126, 0.1);
+      width: 36px; height: 36px; border-radius: 10px; background: var(--status-info-bg) !important; 
+      color: var(--status-info-text) !important; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; border: 1px solid var(--prestige-border);
     }
     .name-sector { display: flex; flex-direction: column; }
     .company-name { font-weight: 600; color: var(--prestige-text); font-size: 14px; }
@@ -183,7 +184,7 @@ import { AdminService } from '../../../services/admin.service';
 
     .periods-wrap { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .period-tag { 
-      background: #f5f7fa; color: var(--prestige-text-muted); padding: 2px 8px; 
+      background: var(--status-neutral-bg); color: var(--status-neutral-text); padding: 2px 8px; 
       border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid var(--prestige-border);
     }
     .add-period-btn { 
@@ -195,11 +196,11 @@ import { AdminService } from '../../../services/admin.service';
 
     .status-indicator { 
       padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;
-      text-transform: uppercase; background: #fff5f5; color: #e53935; border: 1px solid #ffcdd2;
+      text-transform: uppercase; background: var(--status-error-bg) !important; color: var(--status-error-text) !important; border: 1px solid var(--prestige-border);
       width: fit-content;
     }
     .status-indicator.active { 
-      background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;
+      background: var(--status-success-bg) !important; color: var(--status-success-text) !important; border: 1px solid var(--prestige-border);
     }
 
     .action-buttons { display: flex; gap: 2px; }
@@ -222,6 +223,7 @@ import { AdminService } from '../../../services/admin.service';
 export class CompanyManagementComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   dataSource = new MatTableDataSource<any>([]);
   displayedColumns = ['name', 'nit', 'periods', 'status', 'actions'];
@@ -233,16 +235,14 @@ export class CompanyManagementComponent implements OnInit {
 
   loadCompanies() {
     this.loading = true;
-    console.log('[CompanyMgmt] Sincronizando con backend...');
     this.adminService.getCompanies().subscribe({
       next: (data) => {
-        console.log('[CompanyMgmt] Respuesta exitosa:', data);
         this.dataSource.data = data || [];
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('[CompanyMgmt] Error de carga:', err);
+        console.error('[CompanyMgmt] Error:', err);
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -255,20 +255,44 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   onCreate() {
-    console.log('UI Action: Crear nueva empresa');
+    const dialogRef = this.dialog.open(CompanyDialog, { data: {} });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.createCompany(result).subscribe(() => this.loadCompanies());
+      }
+    });
   }
 
   onEdit(company: any) {
-    console.log('UI Action: Editar empresa', company);
+    const dialogRef = this.dialog.open(CompanyDialog, { data: { ...company } });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.updateCompany(company.id, result).subscribe(() => this.loadCompanies());
+      }
+    });
   }
 
   onAddPeriod(company: any) {
-    console.log('UI Action: Añadir periodo a', company.name);
+    const year = prompt('Ingrese el año del nuevo periodo:'); // Temporary prompt, but let's at least fix Delete first
+    if (year && !isNaN(parseInt(year))) {
+      this.adminService.addPeriod(company.id, { year: parseInt(year) }).subscribe(() => this.loadCompanies());
+    }
   }
 
   onDelete(company: any) {
-    if (confirm(`¿Estás seguro de desactivar la empresa ${company.name}?`)) {
-      this.adminService.deleteCompany(company.id).subscribe(() => this.loadCompanies());
-    }
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Desactivar Empresa',
+        message: `¿Estás seguro de que deseas desactivar la empresa "${company.name}"? Los datos históricos permanecerán pero no se podrán realizar nuevos registros.`,
+        confirmText: 'Desactivar',
+        color: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.deleteCompany(company.id).subscribe(() => this.loadCompanies());
+      }
+    });
   }
 }

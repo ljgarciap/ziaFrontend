@@ -329,12 +329,13 @@
     </div>
 
     <br>
-    <div class="divider"><span>Medición de Alcance 2 & 3</span></div>
+    <div class="divider"><span>Medición de Alcance 2</span></div>
 
     <mat-accordion>
         <mat-expansion-panel class="scope-panel">
-            <mat-expansion-panel-header><mat-panel-title>Alcance 2
-                    (Electricidad)</mat-panel-title></mat-expansion-panel-header>
+            <mat-expansion-panel-header>
+                <mat-panel-title>Alcance 2 (Electricidad)</mat-panel-title>
+            </mat-expansion-panel-header>
             <div class="input-row">
                 <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Factor de Emisión (Red)</mat-label>
@@ -351,13 +352,20 @@
                     <span matSuffix>kWh</span>
                 </mat-form-field>
             </div>
-            <div class="action-row"><button mat-raised-button color="primary" (click)="addElectricity()">Cargar</button>
+            <div class="action-row">
+                <button mat-raised-button color="primary" (click)="addElectricity()">Cargar</button>
             </div>
         </mat-expansion-panel>
+    </mat-accordion>
 
+    <br>
+    <div class="divider"><span>Medición de Alcance 3</span></div>
+
+    <mat-accordion>
         <mat-expansion-panel class="scope-panel">
-            <mat-expansion-panel-header><mat-panel-title>Alcance 3 (Otras
-                    Fuentes)</mat-panel-title></mat-expansion-panel-header>
+            <mat-expansion-panel-header>
+                <mat-panel-title>Alcance 3 (Otras Fuentes)</mat-panel-title>
+            </mat-expansion-panel-header>
 
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Vuelos (km viajados)</mat-label>
@@ -369,8 +377,9 @@
                 <input matInput type="number" [(ngModel)]="remoteEmployees">
             </mat-form-field>
 
-            <div class="action-row"><button mat-raised-button color="primary" (click)="addScope3()">Cargar Alcance
-                    3</button></div>
+            <div class="action-row">
+                <button mat-raised-button color="primary" (click)="addScope3()">Cargar Alcance 3</button>
+            </div>
         </mat-expansion-panel>
     </mat-accordion>
 

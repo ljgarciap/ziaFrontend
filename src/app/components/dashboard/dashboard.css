@@ -4,7 +4,7 @@
 
 .sidenav {
     width: 280px;
-    background: #ffffff;
+    background: var(--prestige-card-bg);
     border-right: 1px solid var(--prestige-border);
 }
 
@@ -14,19 +14,21 @@
 
 .content {
     padding: 0;
-    min-height: calc(100vh - 64px);
+    min-height: calc(100vh - 70px);
     background: var(--prestige-bg);
+    position: relative;
+    z-index: 1;
 }
 
 .active-link {
-    background: rgba(26, 35, 126, 0.05) !important;
+    background: var(--row-hover-bg) !important;
     color: var(--prestige-primary) !important;
     font-weight: 600 !important;
     border-right: 3px solid var(--prestige-primary);
 }
 
 mat-nav-list a {
-    color: var(--prestige-text-muted);
+    color: var(--prestige-text-muted) !important;
     font-weight: 500;
     font-size: 14px;
     margin: 4px 12px;
@@ -35,16 +37,18 @@ mat-nav-list a {
 }
 
 mat-nav-list a:hover {
-    background: #f8f9fa;
+    background: var(--table-header-bg);
     color: var(--prestige-primary);
 }
 
 .prestige-toolbar {
-    background: white !important;
+    background: var(--prestige-card-bg) !important;
     border-bottom: 1px solid var(--prestige-border);
     height: 70px;
     padding: 0 24px;
     color: var(--prestige-text);
+    position: relative;
+    z-index: 1000;
 }
 
 .toolbar-title {
@@ -57,7 +61,7 @@ mat-nav-list a:hover {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #f8f9fa;
+    background: var(--table-header-bg);
     padding: 6px 6px 6px 16px;
     border-radius: 40px;
     border: 1px solid var(--prestige-border);
@@ -83,7 +87,11 @@ mat-nav-list a:hover {
 
 .menu-btn {
     margin-right: 12px;
-    color: var(--prestige-text-muted);
+    color: var(--prestige-text-muted) !important;
+}
+
+mat-icon {
+    color: inherit !important;
 }
 
 
@@ -95,9 +103,10 @@ mat-nav-list a:hover {
 }
 
 .card {
-    background: white;
+    background: var(--prestige-card-bg);
     padding: 20px;
     border-radius: 8px;
+    border: 1px solid var(--prestige-border);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     height: 150px;
     display: flex;
@@ -105,4 +114,21 @@ mat-nav-list a:hover {
     justify-content: center;
     font-size: 1.2rem;
     font-weight: bold;
+    color: var(--prestige-text);
+}
+
+.theme-toggle-btn {
+    margin-right: 8px;
+    color: var(--prestige-text-muted);
+}
+
+.theme-toggle-btn:hover {
+    color: var(--prestige-primary);
+}
+
+.sidenav mat-toolbar {
+    background: var(--prestige-card-bg) !important;
+    color: var(--prestige-primary) !important;
+    font-weight: 700;
+    letter-spacing: 2px;
 }

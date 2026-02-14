@@ -47,30 +47,30 @@ import { ContextService } from '../../services/context.service';
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--prestige-text-muted);
       margin-bottom: 2px;
       font-weight: 600;
+      opacity: 0.8;
     }
     .zia-select {
-      color: #333;
+      color: var(--prestige-text);
       font-size: 14px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid var(--prestige-border);
       padding: 4px 0;
       transition: all 0.2s ease;
     }
     .zia-select:hover {
-      border-bottom-color: #1a73e8;
+      border-bottom-color: var(--prestige-primary);
     }
     ::ng-deep .zia-select .mat-mdc-select-value {
-      color: #333 !important;
+      color: var(--prestige-text) !important;
       font-weight: 500;
     }
     ::ng-deep .zia-select .mat-mdc-select-arrow svg {
-      fill: #555 !important;
+      fill: var(--prestige-text) !important;
+      opacity: 0.7;
     }
-    ::ng-deep .mat-mdc-select-panel {
-      background: white !important;
-    }
+    /* Panel is handled globally in styles.css */
   `]
 })
 export class ContextSelectorComponent implements OnInit {

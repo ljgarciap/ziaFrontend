@@ -8,7 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { AdminService } from '../../../services/admin.service';
+import { CategoryDialog, FactorDialog, ConfirmDialog } from '../admin-dialogs';
 
 @Component({
   selector: 'app-metadata-management',
@@ -22,7 +24,8 @@ import { AdminService } from '../../../services/admin.service';
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule
   ],
   template: `
     <div class="management-page">
@@ -35,7 +38,7 @@ import { AdminService } from '../../../services/admin.service';
            <button mat-button class="btn-outline-prestige">
              <mat-icon>upload_file</mat-icon> Importar Masivo
            </button>
-           <button mat-flat-button class="btn-prestige">
+           <button mat-flat-button class="btn-prestige" (click)="onCreateCategory()">
              <mat-icon>add</mat-icon> Nueva Categoría
            </button>
         </div>
@@ -64,7 +67,7 @@ import { AdminService } from '../../../services/admin.service';
                     <span class="cat-meta">{{(cat.factors || []).length}} Factores vinculados</span>
                   </div>
               </div>
-              <button mat-icon-button class="cat-action-btn" matTooltip="Agregar Factor">
+              <button mat-icon-button class="cat-action-btn" matTooltip="Agregar Factor" (click)="onCreateFactor(cat)">
                   <mat-icon>add_circle</mat-icon>
               </button>
           </div>
@@ -92,8 +95,8 @@ import { AdminService } from '../../../services/admin.service';
                 <th mat-header-cell *matHeaderCellDef>Acciones</th>
                 <td mat-cell *matCellDef="let f">
                   <div class="factor-actions">
-                    <button mat-icon-button class="small-action-btn" matTooltip="Editar"><mat-icon>edit</mat-icon></button>
-                    <button mat-icon-button class="small-action-btn warn" matTooltip="Desactivar"><mat-icon>delete_outline</mat-icon></button>
+                    <button mat-icon-button class="small-action-btn" (click)="onEditFactor(f)" matTooltip="Editar"><mat-icon>edit</mat-icon></button>
+                    <button mat-icon-button class="small-action-btn warn" (click)="onDeleteFactor(f)" matTooltip="Desactivar"><mat-icon>delete_outline</mat-icon></button>
                   </div>
                 </td>
               </ng-container>
@@ -129,7 +132,7 @@ import { AdminService } from '../../../services/admin.service';
       padding: 0 20px; border-radius: 10px; font-weight: 600; height: 42px; font-size: 14px;
     }
 
-    .filters-bar-prestige { margin-bottom: 24px; }
+    .filters-bar-prestige { margin-bottom: 24px; margin-top: 8px; }
     .global-search { width: 100%; max-width: 400px; font-size: 13px; }
 
     .category-grid { display: flex; flex-direction: column; gap: 24px; }
@@ -138,7 +141,7 @@ import { AdminService } from '../../../services/admin.service';
     
     .cat-brand-header { 
       padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
-      background: #fcfcfd; border-bottom: 1px solid var(--prestige-border);
+      background: var(--table-header-bg); border-bottom: 1px solid var(--prestige-border);
     }
     .cat-ident { display: flex; align-items: center; gap: 16px; }
     .scope-icon { 
@@ -163,12 +166,12 @@ import { AdminService } from '../../../services/admin.service';
     }
 
     .factor-row { height: 48px; }
-    .factor-row:hover { background: #fafbfc !important; }
+    .factor-row:hover { background: var(--row-hover-bg) !important; }
     
     .factor-name-td { font-weight: 500; color: var(--prestige-text); font-size: 13px; }
     .unit-tag { 
-      background: #f1f5f9; color: var(--prestige-text-muted); padding: 2px 8px; 
-      border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid #e2e8f0;
+      background: var(--status-neutral-bg) !important; color: var(--status-neutral-text) !important; padding: 2px 8px; 
+      border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--prestige-border);
     }
     .factor-value-td { font-family: 'Monaco', monospace; font-weight: 600; color: var(--prestige-primary); font-size: 12px; }
 
@@ -191,6 +194,7 @@ import { AdminService } from '../../../services/admin.service';
 export class MetadataManagementComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   categories: any[] = [];
   filteredCategories: any[] = [];
@@ -203,10 +207,8 @@ export class MetadataManagementComponent implements OnInit {
 
   loadMetadata() {
     this.loading = true;
-    console.log('[Metadata] Cargando factores...');
     this.adminService.getCategories().subscribe({
       next: (data) => {
-        console.log('[Metadata] Catégorias recibidas:', data);
         this.categories = (data || []).map(cat => ({
           ...cat,
           dataSource: new MatTableDataSource(cat.factors || [])
@@ -216,9 +218,53 @@ export class MetadataManagementComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('[Metadata] Error de carga:', err);
+        console.error('[Metadata] Error:', err);
         this.loading = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onCreateCategory() {
+    const dialogRef = this.dialog.open(CategoryDialog, { width: '400px' });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.createCategory(result).subscribe(() => this.loadMetadata());
+      }
+    });
+  }
+
+  onCreateFactor(category: any) {
+    const dialogRef = this.dialog.open(FactorDialog, { data: {} });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.createFactor({ ...result, emission_category_id: category.id }).subscribe(() => this.loadMetadata());
+      }
+    });
+  }
+
+  onEditFactor(factor: any) {
+    const dialogRef = this.dialog.open(FactorDialog, { data: { ...factor } });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.updateFactor(factor.id, result).subscribe(() => this.loadMetadata());
+      }
+    });
+  }
+
+  onDeleteFactor(factor: any) {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Desactivar Factor',
+        message: `¿Estás seguro de que deseas desactivar el factor "${factor.name}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Desactivar',
+        color: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.deleteFactor(factor.id).subscribe(() => this.loadMetadata());
       }
     });
   }

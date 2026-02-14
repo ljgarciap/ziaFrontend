@@ -3,22 +3,19 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #d0d1d5;
-  /* React Outer Box color */
+  background-color: var(--prestige-bg);
 }
 
 .login-card {
   max-width: 400px;
   width: 90%;
   padding: 40px;
-  border-radius: 8px;
-  /* React uses borderRadius: 2 (approx 8px) */
-  box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
-  /* Approximate MUI boxShadow: 3 */
-  background-color: #fcfcfc;
-  /* React Inner Box color */
+  border-radius: 12px;
+  box-shadow: var(--glass-shadow);
+  background-color: var(--prestige-card-bg);
   text-align: center;
-  color: black;
+  color: var(--prestige-text);
+  border: 1px solid var(--prestige-border);
 }
 
 .logo-container {

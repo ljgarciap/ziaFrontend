@@ -8,7 +8,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
 import { AdminService } from '../../../services/admin.service';
+import { UserDialog, ConfirmDialog } from '../admin-dialogs';
 
 @Component({
   selector: 'app-user-management',
@@ -22,7 +25,9 @@ import { AdminService } from '../../../services/admin.service';
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatSelectModule
   ],
   template: `
     <div class="management-page">
@@ -31,7 +36,7 @@ import { AdminService } from '../../../services/admin.service';
           <h1>Control de Accesos</h1>
           <p class="subtitle">Gestiona los permisos y roles de los integrantes de la plataforma.</p>
         </div>
-        <button mat-flat-button class="btn-prestige">
+        <button mat-flat-button class="btn-prestige" (click)="onCreate()">
           <mat-icon>person_add</mat-icon> Invitar Usuario
         </button>
       </div>
@@ -94,7 +99,7 @@ import { AdminService } from '../../../services/admin.service';
               <th mat-header-cell *matHeaderCellDef>Acciones</th>
               <td mat-cell *matCellDef="let user">
                 <div class="action-buttons">
-                  <button mat-icon-button class="action-btn edit" matTooltip="Editar Perfil"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button class="action-btn edit" (click)="onEdit(user)" matTooltip="Editar Perfil"><mat-icon>edit</mat-icon></button>
                   <button mat-icon-button class="action-btn delete" *ngIf="!user.deleted_at" (click)="onDelete(user)" matTooltip="Suspender">
                     <mat-icon>person_off</mat-icon>
                   </button>
@@ -136,9 +141,9 @@ import { AdminService } from '../../../services/admin.service';
     .table-wrapper { padding: 0; overflow-x: auto; }
     
     .table-header { 
-      padding: 16px 24px; border-bottom: 1px solid var(--prestige-border);
+      padding: 24px 24px 16px 24px; border-bottom: 1px solid var(--prestige-border);
     }
-    .search-field { width: 300px; margin-bottom: -1.25em; font-size: 13px; }
+    .search-field { width: 320px; margin-bottom: 16px; font-size: 13px; }
 
     .prestige-table { width: 100%; min-width: 800px; }
     .table-container { 
@@ -163,21 +168,21 @@ import { AdminService } from '../../../services/admin.service';
       text-transform: uppercase; letter-spacing: 0.03em; border: 1px solid transparent;
       width: fit-content;
     }
-    .role-chip.superadmin { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
-    .role-chip.admin { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
-    .role-chip.user { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+    .role-chip.superadmin { background: var(--status-error-bg) !important; color: var(--status-error-text) !important; border-color: var(--prestige-border); }
+    .role-chip.admin { background: var(--status-info-bg) !important; color: var(--status-info-text) !important; border-color: var(--prestige-border); }
+    .role-chip.user { background: var(--status-neutral-bg) !important; color: var(--status-neutral-text) !important; border-color: var(--prestige-border); }
 
     .status-badge-premium { 
       padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: bold;
-      background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; width: fit-content;
+      background: var(--status-neutral-bg) !important; color: var(--status-neutral-text) !important; border: 1px solid var(--prestige-border); width: fit-content;
     }
-    .status-badge-premium.active { background: #ecfdf5; color: #065f46; border-color: #d1fae5; }
+    .status-badge-premium.active { background: var(--status-success-bg) !important; color: var(--status-success-text) !important; border-color: var(--prestige-border); }
 
     .action-buttons { display: flex; gap: 4px; }
     .action-btn { color: var(--prestige-text-muted); width: 36px; height: 36px; }
-    .action-btn:hover { background: rgba(0,0,0,0.03); }
+    .action-btn:hover { background: var(--row-hover-bg); }
     .action-btn.edit:hover { color: var(--prestige-primary); }
-    .action-btn.delete:hover { color: #dc2626; }
+    .action-btn.delete:hover { color: var(--status-error-text); }
 
     .spinner-container { padding: 48px; text-align: center; color: var(--prestige-text-muted); font-size: 14px; }
     .empty-state-row td { padding: 40px; text-align: center; color: var(--prestige-text-muted); }
@@ -192,6 +197,7 @@ import { AdminService } from '../../../services/admin.service';
 export class UserManagementComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   dataSource = new MatTableDataSource<any>([]);
   displayedColumns = ['name', 'email', 'role', 'status', 'actions'];
@@ -203,10 +209,8 @@ export class UserManagementComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
-    console.log('[UserMgmt] Sincronizando usuarios...');
     this.adminService.getUsers().subscribe({
       next: (data) => {
-        console.log('[UserMgmt] Datos recibidos:', data);
         this.dataSource.data = data || [];
         this.loading = false;
         this.cdr.detectChanges();
@@ -224,6 +228,24 @@ export class UserManagementComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
+  onCreate() {
+    const dialogRef = this.dialog.open(UserDialog, { data: {} });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.createUser(result).subscribe(() => this.loadUsers());
+      }
+    });
+  }
+
+  onEdit(user: any) {
+    const dialogRef = this.dialog.open(UserDialog, { data: { ...user } });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.updateUser(user.id, result).subscribe(() => this.loadUsers());
+      }
+    });
+  }
+
   getAvatarColor(role: string): string {
     switch (role) {
       case 'superadmin': return '#ef4444';
@@ -233,8 +255,19 @@ export class UserManagementComponent implements OnInit {
   }
 
   onDelete(user: any) {
-    if (confirm(`¿Desactivar usuario ${user.email}?`)) {
-      this.adminService.deleteUser(user.id).subscribe(() => this.loadUsers());
-    }
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Suspender Usuario',
+        message: `¿Estás seguro de que deseas desactivar el acceso para ${user.email}? El usuario no podrá iniciar sesión hasta que sea reactivado.`,
+        confirmText: 'Suspender Acceso',
+        color: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.deleteUser(user.id).subscribe(() => this.loadUsers());
+      }
+    });
   }
 }
