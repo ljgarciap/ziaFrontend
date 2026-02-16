@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
 import { AdminService } from '../../services/admin.service';
 
 @Component({
@@ -18,6 +19,7 @@ import { AdminService } from '../../services/admin.service';
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    MatOptionModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -38,7 +40,7 @@ import { AdminService } from '../../services/admin.service';
 
           <mat-form-field appearance="outline">
             <mat-label>Sector</mat-label>
-            <mat-select formControlName="sector_id">
+            <mat-select formControlName="company_sector_id">
               <mat-option *ngFor="let s of data.sectors" [value]="s.id">{{s.name}}</mat-option>
               <mat-option *ngIf="!data.sectors?.length" disabled>No hay sectores disponibles</mat-option>
             </mat-select>
@@ -65,7 +67,7 @@ export class CompanyDialog {
     this.form = this.fb.group({
       name: [data.company?.name || '', Validators.required],
       nit: [data.company?.nit || '', Validators.required],
-      sector_id: [data.company?.sector_id || null]
+      company_sector_id: [data.company?.company_sector_id || data.company?.sector_id || null]
     });
   }
 
@@ -152,6 +154,7 @@ export class SectorDialog {
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    MatOptionModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -226,6 +229,8 @@ export class UserDialog {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatSelectModule,
+    MatOptionModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -404,6 +409,7 @@ export class FormulaDialog {
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    MatOptionModule,
     FormsModule,
     ReactiveFormsModule
   ],

@@ -46,7 +46,7 @@ export const routes: Routes = [
                 path: 'admin/metadata',
                 component: MetadataManagementComponent,
                 canActivate: [roleGuard],
-                data: { roles: ['superadmin'] }
+                data: { roles: ['superadmin', 'admin'] }
             },
 
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

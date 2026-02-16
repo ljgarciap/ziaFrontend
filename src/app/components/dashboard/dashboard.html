@@ -29,8 +29,8 @@
                     <div matListItemTitle>Usuarios</div>
                 </a>
 
-                <a *ngIf="authService.currentUser()?.role === 'superadmin'" mat-list-item routerLink="/admin/metadata"
-                    routerLinkActive="active-link">
+                <a *ngIf="['superadmin', 'admin'].includes(authService.currentUser()?.role)" mat-list-item
+                    routerLink="/admin/metadata" routerLinkActive="active-link">
                     <mat-icon matListItemIcon>settings_suggest</mat-icon>
                     <div matListItemTitle>Factores</div>
                 </a>

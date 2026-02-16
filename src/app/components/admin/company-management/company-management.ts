@@ -67,7 +67,7 @@ import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
                   <div class="company-logo">{{company.name?.charAt(0) || '?'}}</div>
                   <div class="name-sector">
                     <span class="company-name">{{company.name || 'Empresa sin nombre'}}</span>
-                    <span class="company-sector">{{company.sector_info?.name || company.sector || 'Sector no definido'}}</span>
+                    <span class="company-sector">{{company.sector?.name || company.sector_info?.name || company.sector || 'Sector no definido'}}</span>
                   </div>
                 </div>
               </td>

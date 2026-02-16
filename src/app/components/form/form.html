@@ -81,6 +81,18 @@
                                     <span matSuffix>Galones</span>
                                 </mat-form-field>
                             </div>
+
+                            <div *ngIf="selectedLiquidFuel" class="formula-display">
+                                <mat-icon>functions</mat-icon>
+                                <span class="formula-text">
+                                    <strong>Fórmula:</strong> {{ selectedLiquidFuel.formula?.name || 'Multiplicación
+                                    Directa' }}
+                                    <br>
+                                    <strong>Factor CO₂e:</strong> {{ selectedLiquidFuel.factor_total_co2e }} {{
+                                    selectedLiquidFuel.unit }}
+                                </span>
+                            </div>
+
                             <div class="action-row">
                                 <button mat-raised-button color="primary" (click)="addLiquidFuel()">Cargar</button>
                             </div>
@@ -106,6 +118,18 @@
                                     <span matSuffix>Unidades</span>
                                 </mat-form-field>
                             </div>
+
+                            <div *ngIf="selectedGaseousFuel" class="formula-display">
+                                <mat-icon>functions</mat-icon>
+                                <span class="formula-text">
+                                    <strong>Fórmula:</strong> {{ selectedGaseousFuel.formula?.name || 'Multiplicación
+                                    Directa' }}
+                                    <br>
+                                    <strong>Factor CO₂e:</strong> {{ selectedGaseousFuel.factor_total_co2e }} {{
+                                    selectedGaseousFuel.unit }}
+                                </span>
+                            </div>
+
                             <div class="action-row"><button mat-raised-button color="primary"
                                     (click)="addGaseousFuel()">Cargar</button></div>
                         </mat-expansion-panel>
@@ -352,6 +376,17 @@
                     <span matSuffix>kWh</span>
                 </mat-form-field>
             </div>
+
+            <div *ngIf="selectedElectricityFactor" class="formula-display">
+                <mat-icon>functions</mat-icon>
+                <span class="formula-text">
+                    <strong>Fórmula:</strong> {{ selectedElectricityFactor.formula?.name || 'Multiplicación Directa' }}
+                    <br>
+                    <strong>Factor CO₂e:</strong> {{ selectedElectricityFactor.factor_total_co2e }} {{
+                    selectedElectricityFactor.unit }}
+                </span>
+            </div>
+
             <div class="action-row">
                 <button mat-raised-button color="primary" (click)="addElectricity()">Cargar</button>
             </div>

@@ -136,3 +136,33 @@ button[mat-raised-button].mat-accent {
     border-radius: 4px;
     font-family: monospace;
 }
+
+.formula-display {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    background: var(--status-info-bg);
+    border-left: 4px solid var(--prestige-primary);
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.formula-display mat-icon {
+    color: var(--prestige-primary);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.formula-display .formula-text {
+    color: var(--status-info-text);
+    line-height: 1.6;
+}
+
+.formula-display strong {
+    color: var(--prestige-primary);
+    font-weight: 600;
+}

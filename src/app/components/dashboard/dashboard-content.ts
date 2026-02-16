@@ -135,20 +135,19 @@ import { MatButtonModule } from '@angular/material/button';
                 <span class="eq-title">Tu huella equivale a:</span>
                 <span class="eq-value">{{summary.equivalency.value | number:'1.0-1'}}</span>
                 <span class="eq-label">{{summary.equivalency.label}}</span>
-                <button class="btn-eq">VER DETALLES</button>
             </div>
         </div>
 
         <!-- Bottom Section -->
         <div class="bottom-grid">
             <div class="glass-card trend-card">
-                <h3 class="chart-title">Revenue Generated ($)</h3>
+                <h3 class="chart-title">Evolución Temporal de Emisiones</h3>
                 <div class="chart-h-wrap">
                     <canvas #lineChart></canvas>
                 </div>
             </div>
             <div class="glass-card trend-card">
-                <h3 class="chart-title">Categorical Distribution (Sales)</h3>
+                <h3 class="chart-title">Distribución por Categoría</h3>
                 <div class="chart-h-wrap">
                     <canvas #barChart></canvas>
                 </div>

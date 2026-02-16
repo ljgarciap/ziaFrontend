@@ -13,8 +13,14 @@ export class ContextService {
         const savedCompany = localStorage.getItem('zia_selected_company');
         const savedPeriod = localStorage.getItem('zia_selected_period');
 
-        if (savedCompany) this.selectedCompany.set(JSON.parse(savedCompany));
-        if (savedPeriod) this.selectedPeriod.set(JSON.parse(savedPeriod));
+        try {
+            if (savedCompany) this.selectedCompany.set(JSON.parse(savedCompany));
+            if (savedPeriod) this.selectedPeriod.set(JSON.parse(savedPeriod));
+        } catch (e) {
+            console.error('[ContextService] Initialization failed, clearing storage:', e);
+            localStorage.removeItem('zia_selected_company');
+            localStorage.removeItem('zia_selected_period');
+        }
     }
 
     setCompany(company: any) {
