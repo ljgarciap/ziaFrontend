@@ -11,6 +11,9 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+
 @Component({
   selector: 'app-dashboard-content',
   standalone: true,
@@ -20,6 +23,8 @@ Chart.register(...registerables);
     MatIconModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
+    MatMenuModule,
+    MatButtonModule,
     ContextSelectorComponent
   ],
   template: `
@@ -30,7 +35,24 @@ Chart.register(...registerables);
                 <h1>ZIA Carbon Control</h1>
                 <p>Huella de Carbono Corporativa</p>
             </div>
-            <app-context-selector></app-context-selector>
+            
+            <div class="header-actions">
+                <button mat-flat-button color="primary" [matMenuTriggerFor]="reportMenu" *ngIf="selectedPeriod">
+                    <mat-icon>download</mat-icon>
+                    GENERAR REPORTES
+                </button>
+                <mat-menu #reportMenu="matMenu" class="prestige-menu">
+                    <button mat-menu-item (click)="onDownloadPdf()">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                        <span>Resumen Ejecutivo (PDF)</span>
+                    </button>
+                    <button mat-menu-item (click)="onDownloadExcel()">
+                        <mat-icon>table_view</mat-icon>
+                        <span>Detalle Científico (Excel)</span>
+                    </button>
+                </mat-menu>
+                <app-context-selector></app-context-selector>
+            </div>
         </div>
     </div>
 
@@ -109,10 +131,10 @@ Chart.register(...registerables);
                 </div>
             </div>
 
-            <div class="glass-card equivalency-card">
+            <div class="glass-card equivalency-card" *ngIf="summary?.equivalency">
                 <span class="eq-title">Tu huella equivale a:</span>
-                <span class="eq-value">5.119</span>
-                <span class="eq-label">Personas consumiendo energía <br> eléctrica anualmente</span>
+                <span class="eq-value">{{summary.equivalency.value | number:'1.0-1'}}</span>
+                <span class="eq-label">{{summary.equivalency.label}}</span>
                 <button class="btn-eq">VER DETALLES</button>
             </div>
         </div>
@@ -140,6 +162,7 @@ Chart.register(...registerables);
     .flex-between { display: flex; justify-content: space-between; align-items: flex-end; }
     .dashboard-header h1 { font-size: 28px; font-weight: 700; color: var(--prestige-primary); margin: 0; }
     .dashboard-header p { color: var(--prestige-text-muted); font-size: 14px; }
+    .header-actions { display: flex; align-items: center; gap: 16px; }
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; margin-top: 24px;}
     .summary-card { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s; }
     .summary-card:hover { transform: translateY(-4px); }
@@ -248,6 +271,32 @@ export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestr
         setTimeout(() => this.initializeTrends(res), 50);
       },
       error: (err) => console.error('Error loading dashboard trends:', err)
+    });
+  }
+
+  onDownloadPdf() {
+    if (!this.selectedPeriod) return;
+    this.dashboardService.downloadPdf(this.selectedPeriod.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Reporte_Zia_${this.selectedCompany.name}_${this.selectedPeriod.year}.pdf`;
+        link.click();
+      }
+    });
+  }
+
+  onDownloadExcel() {
+    if (!this.selectedPeriod) return;
+    this.dashboardService.downloadExcel(this.selectedPeriod.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Datos_Zia_${this.selectedCompany.name}_${this.selectedPeriod.year}.xlsx`;
+        link.click();
+      }
     });
   }
 

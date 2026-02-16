@@ -68,6 +68,10 @@ export class AdminService {
         return this.http.delete(`${this.apiUrl}/categories/${id}`);
     }
 
+    getFactors(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/factors`);
+    }
+
     createFactor(data: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/factors`, data);
     }
@@ -78,5 +82,39 @@ export class AdminService {
 
     deleteFactor(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/factors/${id}`);
+    }
+
+    // Sectors
+    getSectors(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/sectors`);
+    }
+
+    createSector(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/sectors`, data);
+    }
+
+    updateSector(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/sectors/${id}`, data);
+    }
+
+    deleteSector(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/sectors/${id}`);
+    }
+
+    // Formulas
+    getFormulas(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/formulas`);
+    }
+
+    createFormula(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/formulas`, data);
+    }
+
+    updateFormula(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/formulas/${id}`, data);
+    }
+
+    deleteFormula(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/formulas/${id}`);
     }
 }

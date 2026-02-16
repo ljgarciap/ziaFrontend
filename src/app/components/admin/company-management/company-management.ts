@@ -67,7 +67,7 @@ import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
                   <div class="company-logo">{{company.name?.charAt(0) || '?'}}</div>
                   <div class="name-sector">
                     <span class="company-name">{{company.name || 'Empresa sin nombre'}}</span>
-                    <span class="company-sector">{{company.sector || 'Sector no definido'}}</span>
+                    <span class="company-sector">{{company.sector_info?.name || company.sector || 'Sector no definido'}}</span>
                   </div>
                 </div>
               </td>
@@ -227,10 +227,12 @@ export class CompanyManagementComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>([]);
   displayedColumns = ['name', 'nit', 'periods', 'status', 'actions'];
+  sectors: any[] = [];
   loading = true;
 
   ngOnInit() {
     this.loadCompanies();
+    this.loadSectors();
   }
 
   loadCompanies() {
@@ -249,13 +251,21 @@ export class CompanyManagementComponent implements OnInit {
     });
   }
 
+  loadSectors() {
+    this.adminService.getSectors().subscribe(data => {
+      this.sectors = data || [];
+    });
+  }
+
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onCreate() {
-    const dialogRef = this.dialog.open(CompanyDialog, { data: {} });
+    const dialogRef = this.dialog.open(CompanyDialog, {
+      data: { company: {}, sectors: this.sectors }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.createCompany(result).subscribe(() => this.loadCompanies());
@@ -264,7 +274,9 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   onEdit(company: any) {
-    const dialogRef = this.dialog.open(CompanyDialog, { data: { ...company } });
+    const dialogRef = this.dialog.open(CompanyDialog, {
+      data: { company: { ...company }, sectors: this.sectors }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.updateCompany(company.id, result).subscribe(() => this.loadCompanies());
@@ -273,9 +285,9 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   onAddPeriod(company: any) {
-    const year = prompt('Ingrese el año del nuevo periodo:'); // Temporary prompt, but let's at least fix Delete first
+    const year = prompt('Ingrese el año del nuevo periodo:');
     if (year && !isNaN(parseInt(year))) {
-      this.adminService.addPeriod(company.id, { year: parseInt(year) }).subscribe(() => this.loadCompanies());
+      this.adminService.addPeriod(company.id, { year: parseInt(year), status: 'open' }).subscribe(() => this.loadCompanies());
     }
   }
 

@@ -448,3 +448,29 @@ mat-card,
 .mat-mdc-row:hover {
     background-color: var(--row-hover-bg) !important;
 }
+/* New Calculation Engine UI Helpers */
+.subtitle-premium {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--prestige-primary);
+    margin: 16px 0 12px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--prestige-border);
+}
+
+.zia-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.mat-mdc-dialog-content {
+    max-height: 80vh !important;
+}

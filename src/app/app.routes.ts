@@ -8,6 +8,7 @@ import { authGuard } from './guards/auth-guard';
 import { roleGuard } from './guards/role-guard';
 import { CompanyManagementComponent } from './components/admin/company-management/company-management';
 import { UserManagementComponent } from './components/admin/user-management/user-management';
+import { SectorManagementComponent } from './components/admin/sector-management/sector-management';
 import { MetadataManagementComponent } from './components/admin/metadata-management/metadata-management';
 
 export const routes: Routes = [
@@ -26,6 +27,12 @@ export const routes: Routes = [
             {
                 path: 'admin/companies',
                 component: CompanyManagementComponent,
+                canActivate: [roleGuard],
+                data: { roles: ['superadmin', 'admin'] }
+            },
+            {
+                path: 'admin/sectors',
+                component: SectorManagementComponent,
                 canActivate: [roleGuard],
                 data: { roles: ['superadmin', 'admin'] }
             },
