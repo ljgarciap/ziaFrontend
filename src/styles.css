@@ -223,15 +223,22 @@ mat-sidenav {
 }
 
 /* Dialog Premium Styling */
-.zia-dialog-premium {
-    background-color: var(--prestige-card-bg);
-    color: var(--prestige-text);
+.zia-dialog-premium,
+.mat-mdc-dialog-container,
+.mat-mdc-dialog-surface {
+    background-color: var(--prestige-card-bg) !important;
+    color: var(--prestige-text) !important;
 }
 
 /* Material Overlay & Tooltip Theme Support */
 .cdk-overlay-pane {
-    --mdc-dialog-container-color: var(--prestige-card-bg);
-    --mdc-dialog-supporting-text-color: var(--prestige-text-muted);
+    --mdc-dialog-container-color: var(--prestige-card-bg) !important;
+    --mdc-dialog-supporting-text-color: var(--prestige-text-muted) !important;
+}
+
+/* Force dark mode for checkbox labels and other dialog elements */
+body.dark-theme .mat-mdc-dialog-container .mdc-label {
+    color: var(--prestige-text) !important;
 }
 
 /* Mat Menu Theme Support */
@@ -447,4 +454,31 @@ mat-card,
 
 .mat-mdc-row:hover {
     background-color: var(--row-hover-bg) !important;
+}
+
+/* New Calculation Engine UI Helpers */
+.subtitle-premium {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--prestige-primary);
+    margin: 16px 0 12px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--prestige-border);
+}
+
+.zia-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.mat-mdc-dialog-content {
+    max-height: 80vh !important;
 }

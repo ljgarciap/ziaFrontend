@@ -21,4 +21,12 @@ export class DashboardService {
         let params = new HttpParams().set('company_id', companyId.toString());
         return this.http.get(`${this.apiUrl}/trends`, { params });
     }
+
+    downloadPdf(periodId: number): Observable<Blob> {
+        return this.http.get(`http://127.0.0.1:8000/api/reports/periods/${periodId}/pdf`, { responseType: 'blob' });
+    }
+
+    downloadExcel(periodId: number): Observable<Blob> {
+        return this.http.get(`http://127.0.0.1:8000/api/reports/periods/${periodId}/excel`, { responseType: 'blob' });
+    }
 }

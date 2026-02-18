@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AdminService } from '../../../services/admin.service';
 import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
+import { CompanyFactorSettingsDialog } from './company-factor-settings-dialog';
 
 @Component({
   selector: 'app-company-management',
@@ -67,7 +68,7 @@ import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
                   <div class="company-logo">{{company.name?.charAt(0) || '?'}}</div>
                   <div class="name-sector">
                     <span class="company-name">{{company.name || 'Empresa sin nombre'}}</span>
-                    <span class="company-sector">{{company.sector || 'Sector no definido'}}</span>
+                    <span class="company-sector">{{company.sector?.name || company.sector_info?.name || company.sector || 'Sector no definido'}}</span>
                   </div>
                 </div>
               </td>
@@ -105,6 +106,9 @@ import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
                 <div class="action-buttons">
                   <button mat-icon-button class="action-btn edit" (click)="onEdit(company)" matTooltip="Ajustes">
                     <mat-icon>settings</mat-icon>
+                  </button>
+                  <button mat-icon-button class="action-btn factor" (click)="onManageFactors(company)" matTooltip="Configurar Factores">
+                    <mat-icon>fact_check</mat-icon>
                   </button>
                   <button mat-icon-button class="action-btn delete" *ngIf="!company.deleted_at" (click)="onDelete(company)" matTooltip="Desactivar">
                     <mat-icon>block</mat-icon>
@@ -206,6 +210,7 @@ import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
     .action-buttons { display: flex; gap: 2px; }
     .action-btn { color: var(--prestige-text-muted); width: 36px; height: 36px; }
     .action-btn.edit:hover { color: var(--prestige-primary); background: rgba(26, 35, 126, 0.05); }
+    .action-btn.factor:hover { color: #00897b; background: rgba(0, 137, 123, 0.05); }
     .action-btn.delete:hover { color: #d32f2f; background: #ffebee; }
 
     .spinner-container { padding: 48px; text-align: center; color: var(--prestige-text-muted); font-size: 14px; }
@@ -227,10 +232,12 @@ export class CompanyManagementComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>([]);
   displayedColumns = ['name', 'nit', 'periods', 'status', 'actions'];
+  sectors: any[] = [];
   loading = true;
 
   ngOnInit() {
     this.loadCompanies();
+    this.loadSectors();
   }
 
   loadCompanies() {
@@ -249,13 +256,21 @@ export class CompanyManagementComponent implements OnInit {
     });
   }
 
+  loadSectors() {
+    this.adminService.getSectors().subscribe(data => {
+      this.sectors = data || [];
+    });
+  }
+
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onCreate() {
-    const dialogRef = this.dialog.open(CompanyDialog, { data: {} });
+    const dialogRef = this.dialog.open(CompanyDialog, {
+      data: { company: {}, sectors: this.sectors }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.createCompany(result).subscribe(() => this.loadCompanies());
@@ -264,7 +279,9 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   onEdit(company: any) {
-    const dialogRef = this.dialog.open(CompanyDialog, { data: { ...company } });
+    const dialogRef = this.dialog.open(CompanyDialog, {
+      data: { company: { ...company }, sectors: this.sectors }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.updateCompany(company.id, result).subscribe(() => this.loadCompanies());
@@ -273,9 +290,9 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   onAddPeriod(company: any) {
-    const year = prompt('Ingrese el año del nuevo periodo:'); // Temporary prompt, but let's at least fix Delete first
+    const year = prompt('Ingrese el año del nuevo periodo:');
     if (year && !isNaN(parseInt(year))) {
-      this.adminService.addPeriod(company.id, { year: parseInt(year) }).subscribe(() => this.loadCompanies());
+      this.adminService.addPeriod(company.id, { year: parseInt(year), status: 'open' }).subscribe(() => this.loadCompanies());
     }
   }
 
@@ -293,6 +310,13 @@ export class CompanyManagementComponent implements OnInit {
       if (result) {
         this.adminService.deleteCompany(company.id).subscribe(() => this.loadCompanies());
       }
+    });
+  }
+
+  onManageFactors(company: any) {
+    this.dialog.open(CompanyFactorSettingsDialog, {
+      data: { company },
+      width: '600px'
     });
   }
 }

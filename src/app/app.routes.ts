@@ -8,6 +8,7 @@ import { authGuard } from './guards/auth-guard';
 import { roleGuard } from './guards/role-guard';
 import { CompanyManagementComponent } from './components/admin/company-management/company-management';
 import { UserManagementComponent } from './components/admin/user-management/user-management';
+import { SectorManagementComponent } from './components/admin/sector-management/sector-management';
 import { MetadataManagementComponent } from './components/admin/metadata-management/metadata-management';
 
 export const routes: Routes = [
@@ -30,6 +31,12 @@ export const routes: Routes = [
                 data: { roles: ['superadmin', 'admin'] }
             },
             {
+                path: 'admin/sectors',
+                component: SectorManagementComponent,
+                canActivate: [roleGuard],
+                data: { roles: ['superadmin', 'admin'] }
+            },
+            {
                 path: 'admin/users',
                 component: UserManagementComponent,
                 canActivate: [roleGuard],
@@ -38,6 +45,24 @@ export const routes: Routes = [
             {
                 path: 'admin/metadata',
                 component: MetadataManagementComponent,
+                canActivate: [roleGuard],
+                data: { roles: ['superadmin', 'admin'] }
+            },
+            {
+                path: 'admin/units',
+                loadComponent: () => import('./components/admin/unit-management/unit-management').then(m => m.UnitManagementComponent),
+                canActivate: [roleGuard],
+                data: { roles: ['superadmin', 'admin'] }
+            },
+            {
+                path: 'admin/scopes',
+                loadComponent: () => import('./components/admin/scope-management/scope-management').then(m => m.ScopeManagementComponent),
+                canActivate: [roleGuard],
+                data: { roles: ['superadmin', 'admin'] }
+            },
+            {
+                path: 'admin/audit',
+                loadComponent: () => import('./components/admin/audit-logs/audit-logs').then(m => m.AuditLogsComponent),
                 canActivate: [roleGuard],
                 data: { roles: ['superadmin'] }
             },

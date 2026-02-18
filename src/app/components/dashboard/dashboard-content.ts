@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router'; // Added Router
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -7,9 +8,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ContextSelectorComponent } from '../context-selector/context-selector';
 import { DashboardService } from '../../services/dashboard.service';
 import { ContextService } from '../../services/context.service';
+import { AuthService } from '../../services/auth'; // Added AuthService
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
+
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-dashboard-content',
@@ -20,6 +25,8 @@ Chart.register(...registerables);
     MatIconModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
+    MatMenuModule,
+    MatButtonModule,
     ContextSelectorComponent
   ],
   template: `
@@ -30,7 +37,29 @@ Chart.register(...registerables);
                 <h1>ZIA Carbon Control</h1>
                 <p>Huella de Carbono Corporativa</p>
             </div>
-            <app-context-selector></app-context-selector>
+            
+            <div class="header-actions">
+                <button mat-stroked-button class="audit-btn" (click)="goToAudit()" *ngIf="isSuperAdmin">
+                    <mat-icon>security</mat-icon>
+                    AUDITORÍA
+                </button>
+
+                <button mat-flat-button color="primary" [matMenuTriggerFor]="reportMenu" *ngIf="selectedPeriod">
+                    <mat-icon>download</mat-icon>
+                    GENERAR REPORTES
+                </button>
+                <mat-menu #reportMenu="matMenu" class="prestige-menu">
+                    <button mat-menu-item (click)="onDownloadPdf()">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                        <span>Resumen Ejecutivo (PDF)</span>
+                    </button>
+                    <button mat-menu-item (click)="onDownloadExcel()">
+                        <mat-icon>table_view</mat-icon>
+                        <span>Detalle Científico (Excel)</span>
+                    </button>
+                </mat-menu>
+                <app-context-selector></app-context-selector>
+            </div>
         </div>
     </div>
 
@@ -109,24 +138,23 @@ Chart.register(...registerables);
                 </div>
             </div>
 
-            <div class="glass-card equivalency-card">
+            <div class="glass-card equivalency-card" *ngIf="summary?.equivalency">
                 <span class="eq-title">Tu huella equivale a:</span>
-                <span class="eq-value">5.119</span>
-                <span class="eq-label">Personas consumiendo energía <br> eléctrica anualmente</span>
-                <button class="btn-eq">VER DETALLES</button>
+                <span class="eq-value">{{summary.equivalency.value | number:'1.0-1'}}</span>
+                <span class="eq-label">{{summary.equivalency.label}}</span>
             </div>
         </div>
 
         <!-- Bottom Section -->
         <div class="bottom-grid">
             <div class="glass-card trend-card">
-                <h3 class="chart-title">Revenue Generated ($)</h3>
+                <h3 class="chart-title">Evolución Temporal de Emisiones</h3>
                 <div class="chart-h-wrap">
                     <canvas #lineChart></canvas>
                 </div>
             </div>
             <div class="glass-card trend-card">
-                <h3 class="chart-title">Categorical Distribution (Sales)</h3>
+                <h3 class="chart-title">Distribución por Categoría</h3>
                 <div class="chart-h-wrap">
                     <canvas #barChart></canvas>
                 </div>
@@ -140,20 +168,26 @@ Chart.register(...registerables);
     .flex-between { display: flex; justify-content: space-between; align-items: flex-end; }
     .dashboard-header h1 { font-size: 28px; font-weight: 700; color: var(--prestige-primary); margin: 0; }
     .dashboard-header p { color: var(--prestige-text-muted); font-size: 14px; }
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    .audit-btn { border-color: var(--prestige-primary); color: var(--prestige-primary); font-weight: 600; }
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; margin-top: 24px;}
     .summary-card { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s; }
     .summary-card:hover { transform: translateY(-4px); }
     .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--prestige-text-muted); }
-    .main-value { font-size: 32px; font-weight: 800; color: var(--prestige-text); }
-    .unit { font-size: 13px; color: var(--prestige-text-muted); }
-    .card-footer { margin-top: 16px; border-top: 1px solid var(--prestige-border); display: flex; justify-content: space-between; font-size: 11px; padding-top: 12px; }
+    .card-footer { margin-top: 16px; border-top: 1px solid var(--prestige-border); display: flex; justify-content: space-between; font-size: 11px; padding-top: 12px; color: var(--prestige-text-muted); }
+    .card-footer span:last-child { color: var(--prestige-primary); font-weight: 700; }
+    :host-context(.dark-theme) .card-footer span:last-child { color: var(--prestige-primary-light); }
+    :host-context(.dark-theme) .main-value { color: var(--prestige-text); }
+    :host-context(.dark-theme) .card-title { color: var(--prestige-text-muted); }
+    
     .middle-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 24px; margin-bottom: 32px; }
     .chart-card { padding: 24px; }
     .donut-wrap { height: 250px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .table-scroll { max-height: 300px; overflow-y: auto; }
     .prestige-mini-table { width: 100%; border-collapse: collapse; }
-    .prestige-mini-table th { text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; background: #fafbfc; }
-    .prestige-mini-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--prestige-border); }
+    .prestige-mini-table th { text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; background: var(--table-header-bg); color: var(--prestige-text-muted); }
+    :host-context(.dark-theme) .prestige-mini-table th { color: var(--prestige-text); }
+    .prestige-mini-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--prestige-border); color: var(--prestige-text); }
     .scope-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; color: white; display: inline-block; }
     .scope-1 { background: #1a237e; }
     .scope-2 { background: #00897b; }
@@ -173,6 +207,8 @@ Chart.register(...registerables);
 export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestroy {
   private dashboardService = inject(DashboardService);
   private context = inject(ContextService);
+  private authService = inject(AuthService); // Injected
+  private router = inject(Router); // Injected
   private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('donutChart') donutCanvas!: ElementRef;
@@ -184,6 +220,14 @@ export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestr
 
   selectedCompany: any = null;
   selectedPeriod: any = null;
+
+  get isSuperAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'superadmin';
+  }
+
+  goToAudit() {
+    this.router.navigate(['/admin/audit']);
+  }
 
   private donutChartInst: any;
   private lineChartInst: any;
@@ -248,6 +292,32 @@ export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestr
         setTimeout(() => this.initializeTrends(res), 50);
       },
       error: (err) => console.error('Error loading dashboard trends:', err)
+    });
+  }
+
+  onDownloadPdf() {
+    if (!this.selectedPeriod) return;
+    this.dashboardService.downloadPdf(this.selectedPeriod.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Reporte_Zia_${this.selectedCompany.name}_${this.selectedPeriod.year}.pdf`;
+        link.click();
+      }
+    });
+  }
+
+  onDownloadExcel() {
+    if (!this.selectedPeriod) return;
+    this.dashboardService.downloadExcel(this.selectedPeriod.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Datos_Zia_${this.selectedCompany.name}_${this.selectedPeriod.year}.xlsx`;
+        link.click();
+      }
     });
   }
 

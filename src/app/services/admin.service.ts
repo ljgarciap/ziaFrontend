@@ -68,6 +68,10 @@ export class AdminService {
         return this.http.delete(`${this.apiUrl}/categories/${id}`);
     }
 
+    getFactors(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/factors`);
+    }
+
     createFactor(data: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/factors`, data);
     }
@@ -78,5 +82,87 @@ export class AdminService {
 
     deleteFactor(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/factors/${id}`);
+    }
+
+    // Sectors
+    getSectors(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/sectors`);
+    }
+
+    createSector(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/sectors`, data);
+    }
+
+    updateSector(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/sectors/${id}`, data);
+    }
+
+    deleteSector(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/sectors/${id}`);
+    }
+
+    // Formulas
+    getFormulas(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/formulas`);
+    }
+
+    createFormula(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/formulas`, data);
+    }
+
+    updateFormula(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/formulas/${id}`, data);
+    }
+
+    deleteFormula(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/formulas/${id}`);
+    }
+
+    // Measurement Units
+    getUnits(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/units`);
+    }
+
+    createUnit(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/units`, data);
+    }
+
+    updateUnit(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/units/${id}`, data);
+    }
+
+    deleteUnit(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/units/${id}`);
+    }
+
+    // Scopes
+    getScopes(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/scopes`);
+    }
+
+    createScope(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/scopes`, data);
+    }
+
+    updateScope(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/scopes/${id}`, data);
+    }
+
+    deleteScope(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/scopes/${id}`);
+    }
+
+    // Audit Logs
+    getAuditLogs(params: any = {}): Observable<any> {
+        return this.http.get(`${this.apiUrl}/audit-logs`, { params });
+    }
+
+    // Company Factors
+    getCompanyFactors(companyId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/companies/${companyId}/factors`);
+    }
+
+    updateCompanyFactors(companyId: number, factors: any[]): Observable<any> {
+        return this.http.put(`${this.apiUrl}/companies/${companyId}/factors`, { factors });
     }
 }

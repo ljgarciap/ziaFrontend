@@ -14,7 +14,13 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) {
     const user = localStorage.getItem('user');
     if (user) {
-      this.currentUser.set(JSON.parse(user));
+      try {
+        this.currentUser.set(JSON.parse(user));
+      } catch (e) {
+        console.error('[AuthService] Corrupted session data:', e);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
   }
 

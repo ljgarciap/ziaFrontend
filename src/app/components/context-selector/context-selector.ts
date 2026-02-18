@@ -50,7 +50,10 @@ import { ContextService } from '../../services/context.service';
       color: var(--prestige-text-muted);
       margin-bottom: 2px;
       font-weight: 600;
-      opacity: 0.8;
+    }
+    :host-context(.dark-theme) .selector-label {
+      color: var(--prestige-text);
+      opacity: 0.9;
     }
     .zia-select {
       color: var(--prestige-text);

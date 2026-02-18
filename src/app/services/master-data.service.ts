@@ -18,7 +18,10 @@ export class MasterDataService {
         return this.http.get<any[]>(`${this.apiUrl}/companies/${companyId}/periods`);
     }
 
-    getEmissionFactors(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/dictionaries/factors`);
+    getEmissionFactors(companyId?: number): Observable<any[]> {
+        const url = companyId
+            ? `${this.apiUrl}/dictionaries/factors?company_id=${companyId}`
+            : `${this.apiUrl}/dictionaries/factors`;
+        return this.http.get<any[]>(url);
     }
 }
