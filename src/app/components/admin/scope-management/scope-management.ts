@@ -37,7 +37,7 @@ import { ScopeDialog } from '../admin-dialogs';
             <div class="scope-badge" [ngStyle]="{'background-color': getScopeColor(scope.id)}">Alcance {{scope.id}}</div>
             <div class="scope-title">{{scope.name}}</div>
             <div class="actions">
-                <button mat-icon-button (click)="onEdit(scope)" matTooltip="Editar">
+                <button mat-icon-button class="edit-btn" (click)="onEdit(scope)" matTooltip="Editar">
                     <mat-icon>edit</mat-icon>
                 </button>
                 <button mat-icon-button color="warn" (click)="onDelete(scope)" matTooltip="Eliminar" *ngIf="scope.id > 3">
@@ -65,45 +65,49 @@ import { ScopeDialog } from '../admin-dialogs';
     .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
     .title-group h1 { font-size: 28px; font-weight: 600; color: var(--prestige-primary); margin: 0; }
     .subtitle { color: var(--prestige-text-muted); margin-top: 5px; }
-    .btn-prestige { background-color: var(--prestige-primary); color: white; }
+    .btn-prestige { background-color: var(--prestige-primary); color: white; border-radius: 10px; height: 42px; }
 
-    .scopes-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
+    .scopes-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
     
     .scope-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      background: var(--prestige-card-bg);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow);
       border: 1px solid var(--prestige-border);
       overflow: hidden;
       display: flex; flex-direction: column;
+      transition: transform 0.2s ease;
     }
+    .scope-card:hover { transform: translateY(-4px); }
 
     .scope-header {
       padding: 16px 20px;
       border-bottom: 1px solid var(--prestige-border);
       display: flex; align-items: center; justify-content: space-between;
-      background: #f8fafc;
+      background: var(--table-header-bg);
     }
 
     .scope-badge {
-      padding: 4px 10px; border-radius: 6px; color: white; font-weight: 700; font-size: 12px;
+      padding: 4px 12px; border-radius: 8px; color: white; font-weight: 800; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.05em;
     }
 
-    .scope-title { font-weight: 600; font-size: 16px; margin-left: 10px; flex: 1; color: #334155; }
+    .scope-title { font-weight: 700; font-size: 16px; margin-left: 12px; flex: 1; color: var(--prestige-text); }
     .actions { display: flex; gap: 4px; }
+    .edit-btn { color: var(--prestige-primary) !important; }
 
-    .scope-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+    .scope-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
 
     .field-group label {
-      display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-      color: #64748b; font-weight: 600; margin-bottom: 4px;
+      display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--prestige-primary); font-weight: 700; margin-bottom: 6px;
     }
-    .field-group p { margin: 0; font-size: 14px; color: #334155; line-height: 1.5; }
-    .doc-text { white-space: pre-wrap; font-size: 13px !important; color: #475569 !important; }
+    .field-group p { margin: 0; font-size: 14px; color: var(--prestige-text); line-height: 1.6; }
+    .doc-text { white-space: pre-wrap; font-size: 13px !important; color: var(--prestige-text-muted) !important; padding: 12px; background: var(--row-hover-bg); border-radius: 8px; }
 
-    .scope-border-1 { border-top: 4px solid #1a237e; }
-    .scope-border-2 { border-top: 4px solid #00897b; }
-    .scope-border-3 { border-top: 4px solid #f59e0b; }
+    .scope-border-1 { border-top: 5px solid #1a237e; }
+    .scope-border-2 { border-top: 5px solid #00897b; }
+    .scope-border-3 { border-top: 5px solid #f59e0b; }
   `]
 })
 export class ScopeManagementComponent implements OnInit {

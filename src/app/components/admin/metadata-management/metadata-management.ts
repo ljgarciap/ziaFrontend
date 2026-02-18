@@ -397,7 +397,7 @@ export class MetadataManagementComponent implements OnInit {
 
   onEditFactor(factor: any) {
     const dialogRef = this.dialog.open(FactorDialog, {
-      data: { factor: { ...factor }, formulas: this.formulas }
+      data: { factor: { ...factor }, formulas: this.formulas, units: this.units }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

@@ -104,6 +104,7 @@ export class FormComponent implements AfterViewInit {
     if (initialCompany) {
       this.selectedCompany = initialCompany;
       this.loadPeriods(initialCompany.id);
+      this.loadMasterData(initialCompany.id);
     }
   }
 
@@ -133,6 +134,7 @@ export class FormComponent implements AfterViewInit {
     this.periods = [];
     if (company) {
       this.loadPeriods(company.id);
+      this.loadMasterData(company.id);
     }
   }
 
@@ -147,8 +149,8 @@ export class FormComponent implements AfterViewInit {
     });
   }
 
-  loadMasterData() {
-    this.masterDataService.getEmissionFactors().subscribe((scopes: any[]) => {
+  loadMasterData(companyId?: number) {
+    this.masterDataService.getEmissionFactors(companyId).subscribe((scopes: any[]) => {
       this.scopes = scopes.map(scope => ({
         ...scope,
         categories: scope.categories.map((cat: any) => this.processCategory(cat))

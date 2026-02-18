@@ -174,16 +174,20 @@ import { MatButtonModule } from '@angular/material/button';
     .summary-card { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s; }
     .summary-card:hover { transform: translateY(-4px); }
     .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--prestige-text-muted); }
-    .main-value { font-size: 32px; font-weight: 800; color: var(--prestige-text); }
-    .unit { font-size: 13px; color: var(--prestige-text-muted); }
-    .card-footer { margin-top: 16px; border-top: 1px solid var(--prestige-border); display: flex; justify-content: space-between; font-size: 11px; padding-top: 12px; }
+    .card-footer { margin-top: 16px; border-top: 1px solid var(--prestige-border); display: flex; justify-content: space-between; font-size: 11px; padding-top: 12px; color: var(--prestige-text-muted); }
+    .card-footer span:last-child { color: var(--prestige-primary); font-weight: 700; }
+    :host-context(.dark-theme) .card-footer span:last-child { color: var(--prestige-primary-light); }
+    :host-context(.dark-theme) .main-value { color: var(--prestige-text); }
+    :host-context(.dark-theme) .card-title { color: var(--prestige-text-muted); }
+    
     .middle-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 24px; margin-bottom: 32px; }
     .chart-card { padding: 24px; }
     .donut-wrap { height: 250px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .table-scroll { max-height: 300px; overflow-y: auto; }
     .prestige-mini-table { width: 100%; border-collapse: collapse; }
-    .prestige-mini-table th { text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; background: #fafbfc; }
-    .prestige-mini-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--prestige-border); }
+    .prestige-mini-table th { text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; background: var(--table-header-bg); color: var(--prestige-text-muted); }
+    :host-context(.dark-theme) .prestige-mini-table th { color: var(--prestige-text); }
+    .prestige-mini-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--prestige-border); color: var(--prestige-text); }
     .scope-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; color: white; display: inline-block; }
     .scope-1 { background: #1a237e; }
     .scope-2 { background: #00897b; }

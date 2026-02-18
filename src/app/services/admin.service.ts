@@ -156,4 +156,13 @@ export class AdminService {
     getAuditLogs(params: any = {}): Observable<any> {
         return this.http.get(`${this.apiUrl}/audit-logs`, { params });
     }
+
+    // Company Factors
+    getCompanyFactors(companyId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/companies/${companyId}/factors`);
+    }
+
+    updateCompanyFactors(companyId: number, factors: any[]): Observable<any> {
+        return this.http.put(`${this.apiUrl}/companies/${companyId}/factors`, { factors });
+    }
 }
