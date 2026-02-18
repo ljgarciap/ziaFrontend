@@ -419,7 +419,7 @@ export class FormulaDialog {
   ],
   template: `
     <div class="zia-dialog-premium">
-      <h2 mat-dialog-title>Nueva Categoría</h2>
+      <h2 mat-dialog-title>{{ data.category?.id ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
       <mat-dialog-content>
         <form [formGroup]="form" class="zia-form-compact">
           <mat-form-field appearance="outline">
@@ -441,12 +441,23 @@ export class FormulaDialog {
               </mat-option>
             </mat-select>
           </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Categoría Padre (Para sub-agrupación)</mat-label>
+            <mat-select formControlName="parent_id">
+              <mat-option [value]="null">-- Ninguna (Categoría Principal) --</mat-option>
+              <mat-option *ngFor="let cat of filteredCategories" [value]="cat.id">
+                {{cat.name}}
+              </mat-option>
+            </mat-select>
+            <mat-hint>Si se selecciona, esta categoría aparecerá dentro de la principal.</mat-hint>
+          </mat-form-field>
         </form>
       </mat-dialog-content>
       <mat-dialog-actions align="end">
         <button mat-button (click)="onCancel()">Cancelar</button>
         <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="onSave()">
-          Crear Categoría
+          {{ data.category?.id ? 'Guardar Cambios' : 'Crear Categoría' }}
         </button>
       </mat-dialog-actions>
     </div>
@@ -458,12 +469,19 @@ export class CategoryDialog {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<CategoryDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: { category?: any, scopes: any[], categories: any[] }
   ) {
+    const cat = data.category || {};
     this.form = this.fb.group({
-      name: ['', Validators.required],
-      scope_id: [data.scopes?.[0]?.id || 1, Validators.required]
+      name: [cat.name || '', Validators.required],
+      scope_id: [cat.scope_id || cat.scope?.id || data.scopes?.[0]?.id || 1, Validators.required],
+      parent_id: [cat.parent_id || null]
     });
+  }
+
+  get filteredCategories() {
+    // Avoid circular reference by excluding current category from the list if editing
+    return (this.data.categories || []).filter(c => c.id !== this.data.category?.id && !c.parent_id);
   }
 
   get selectedScope() {

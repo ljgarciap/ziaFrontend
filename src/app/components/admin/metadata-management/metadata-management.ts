@@ -62,74 +62,259 @@ import { CategoryDialog, FactorDialog, ConfirmDialog, FormulaDialog } from '../a
               <p>Cargando factores de emisión...</p>
             </div>
 
-            <div class="category-grid" *ngIf="!loading">
-              <div class="glass-card category-premium-card" *ngFor="let cat of filteredCategories">
-                <div class="cat-brand-header">
-                    <div class="cat-ident">
-                        <div class="scope-icon" [style.background-color]="getScopeColor(cat.scope?.id)">
-                          {{cat.scope?.id}}
+            <div class="hierarchy-container" *ngIf="!loading">
+              <div class="parent-group" *ngFor="let group of filteredGroups">
+                <!-- Parent Header -->
+                <div class="parent-header">
+                  <div class="parent-title">
+                    <div class="scope-dot" [style.background-color]="getScopeColor(group.scope_id || group.scope?.id)"></div>
+                    <h2>{{group.name}}</h2>
+                    <div class="parent-actions">
+                      <button mat-icon-button class="small-action-btn" (click)="onEditCategory(group)" matTooltip="Editar Categoría Principal">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button class="small-action-btn warn" (click)="onDeleteCategory(group)" matTooltip="Eliminar Categoría Principal">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="parent-stats">
+                    {{ group.children?.length || 0 }} Subcategorías
+                  </div>
+                </div>
+
+                <div class="category-grid">
+                  <!-- Parent's own factors (if any) -->
+                  <div class="glass-card category-premium-card" *ngIf="group.factors?.length > 0">
+                    <div class="cat-brand-header">
+                        <div class="cat-ident">
+                            <div class="cat-text">
+                              <h3>{{group.name}} (Principal)</h3>
+                              <span class="cat-meta">{{group.factors.length}} Factores vinculados</span>
+                            </div>
                         </div>
-                        <div class="cat-text">
-                          <h3>{{cat.name}}</h3>
-                          <span class="cat-meta">{{(cat.factors || []).length}} Factores vinculados</span>
+                        <div class="cat-actions">
+                            <button mat-icon-button class="cat-action-btn" matTooltip="Agregar Factor" (click)="onCreateFactor(group)">
+                                <mat-icon>add_circle</mat-icon>
+                            </button>
                         </div>
                     </div>
-                    <div class="cat-actions">
-                        <button mat-icon-button class="cat-action-btn" matTooltip="Agregar Factor" (click)="onCreateFactor(cat)">
-                            <mat-icon>add_circle</mat-icon>
-                        </button>
+                    <!-- Table for parent factors -->
+                    <div class="table-container">
+                      <table mat-table [dataSource]="group.dataSource" class="factors-premium-table">
+                        <ng-container matColumnDef="name">
+                          <th mat-header-cell *matHeaderCellDef>Elemento / Actividad</th>
+                          <td mat-cell *matCellDef="let f" class="factor-name-td">
+                            <div class="name-with-formula">
+                              {{f.name}}
+                              <span class="formula-tag-mini" *ngIf="f.calculation_formula_id">
+                                <mat-icon>bolt</mat-icon> 
+                                {{ getFormulaName(f.calculation_formula_id) }}
+                              </span>
+                            </div>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="unit">
+                          <th mat-header-cell *matHeaderCellDef>Unidad</th>
+                          <td mat-cell *matCellDef="let f">
+                            <span class="unit-tag">{{f.unit?.symbol || f.unit?.name || 'N/A'}}</span>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="factor">
+                          <th mat-header-cell *matHeaderCellDef>Factores de Gas (kg/u)</th>
+                          <td mat-cell *matCellDef="let f" class="factor-value-td">
+                            <div class="gases-breakdown" [matTooltip]="'CO2: ' + f.factor_co2 + ' | CH4: ' + f.factor_ch4 + ' | N2O: ' + f.factor_n2o + ' | NF3: ' + f.factor_nf3 + ' | SF6: ' + f.factor_sf6">
+                              <span class="gas">CO₂: {{f.factor_co2}}</span>
+                              <span class="gas-sep">|</span>
+                              <span class="gas">CH₄: {{f.factor_ch4}}</span>
+                              <span class="gas-sep">|</span>
+                              <span class="gas">N₂O: {{f.factor_n2o}}</span>
+                            </div>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="actions">
+                          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                          <td mat-cell *matCellDef="let f">
+                            <div class="factor-actions">
+                              <button mat-icon-button class="small-action-btn" (click)="onEditFactor(f)" matTooltip="Editar"><mat-icon>edit</mat-icon></button>
+                              <button mat-icon-button class="small-action-btn warn" (click)="onDeleteFactor(f)" matTooltip="Eliminar"><mat-icon>delete_outline</mat-icon></button>
+                            </div>
+                          </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="factor-row"></tr>
+                      </table>
+                      <div class="empty-factors-msg" *ngIf="(group.factors || []).length === 0">
+                         No hay factores vinculados a esta categoría.
+                      </div>
                     </div>
+                  </div>
+
+                  <!-- Children Category Cards -->
+                  <div class="glass-card category-premium-card" *ngFor="let cat of group.children">
+                    <div class="cat-brand-header">
+                        <div class="cat-ident">
+                            <div class="cat-text">
+                              <h3>{{cat.name}}</h3>
+                              <span class="cat-meta">{{(cat.factors || []).length}} Factores vinculados</span>
+                            </div>
+                        </div>
+                        <div class="cat-actions">
+                            <button mat-icon-button class="cat-action-btn" matTooltip="Editar Subcategoría" (click)="onEditCategory(cat)">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                            <button mat-icon-button class="cat-action-btn" matTooltip="Eliminar Subcategoría" (click)="onDeleteCategory(cat)">
+                                <mat-icon>delete_outline</mat-icon>
+                            </button>
+                            <button mat-icon-button class="cat-action-btn" matTooltip="Agregar Factor" (click)="onCreateFactor(cat)">
+                                <mat-icon>add_circle</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Table for child factors -->
+                    <div class="table-container">
+                      <table mat-table [dataSource]="cat.dataSource" class="factors-premium-table">
+                        <ng-container matColumnDef="name">
+                          <th mat-header-cell *matHeaderCellDef>Elemento / Actividad</th>
+                          <td mat-cell *matCellDef="let f" class="factor-name-td">
+                            <div class="name-with-formula">
+                              {{f.name}}
+                              <span class="formula-tag-mini" *ngIf="f.calculation_formula_id">
+                                <mat-icon>bolt</mat-icon> 
+                                {{ getFormulaName(f.calculation_formula_id) }}
+                              </span>
+                            </div>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="unit">
+                          <th mat-header-cell *matHeaderCellDef>Unidad</th>
+                          <td mat-cell *matCellDef="let f">
+                            <span class="unit-tag">{{f.unit?.symbol || f.unit?.name || 'N/A'}}</span>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="factor">
+                          <th mat-header-cell *matHeaderCellDef>Factores de Gas (kg/u)</th>
+                          <td mat-cell *matCellDef="let f" class="factor-value-td">
+                            <div class="gases-breakdown" [matTooltip]="'CO2: ' + f.factor_co2 + ' | CH4: ' + f.factor_ch4 + ' | N2O: ' + f.factor_n2o + ' | NF3: ' + f.factor_nf3 + ' | SF6: ' + f.factor_sf6">
+                              <span class="gas">CO₂: {{f.factor_co2}}</span>
+                              <span class="gas-sep">|</span>
+                              <span class="gas">CH₄: {{f.factor_ch4}}</span>
+                              <span class="gas-sep">|</span>
+                              <span class="gas">N₂O: {{f.factor_n2o}}</span>
+                            </div>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="actions">
+                          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                          <td mat-cell *matCellDef="let f">
+                            <div class="factor-actions">
+                              <button mat-icon-button class="small-action-btn" (click)="onEditFactor(f)" matTooltip="Editar"><mat-icon>edit</mat-icon></button>
+                              <button mat-icon-button class="small-action-btn warn" (click)="onDeleteFactor(f)" matTooltip="Eliminar"><mat-icon>delete_outline</mat-icon></button>
+                            </div>
+                          </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="factor-row"></tr>
+                      </table>
+                      <div class="empty-factors-msg" *ngIf="(cat.factors || []).length === 0">
+                         No hay factores vinculados a esta categoría.
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                <div class="table-container">
-                  <table mat-table [dataSource]="cat.dataSource" class="factors-premium-table">
-                    <ng-container matColumnDef="name">
-                      <th mat-header-cell *matHeaderCellDef>Elemento / Actividad</th>
-                      <td mat-cell *matCellDef="let f" class="factor-name-td">
-                        <div class="name-with-formula">
-                          {{f.name}}
-                          <span class="formula-tag-mini" *ngIf="f.calculation_formula_id">
-                            <mat-icon>bolt</mat-icon> 
-                            {{ getFormulaName(f.calculation_formula_id) }}
-                          </span>
+              </div>
+
+              <!-- Orphan categories (no parent) - shouldn't happen with current seeder but for robustness -->
+              <div class="parent-group" *ngIf="orphanCategories.length > 0">
+                 <div class="parent-header">
+                   <div class="parent-title">
+                     <div class="scope-dot" style="background-color: #64748b"></div>
+                     <h2>Otras Categorías</h2>
+                   </div>
+                 </div>
+                 <div class="category-grid">
+                    <div class="glass-card category-premium-card" *ngFor="let cat of orphanCategories">
+                      <div class="cat-brand-header">
+                          <div class="cat-ident">
+                              <div class="cat-text">
+                                <h3>{{cat.name}}</h3>
+                                <span class="cat-meta">{{(cat.factors || []).length}} Factores vinculados</span>
+                              </div>
+                          </div>
+                          <div class="cat-actions">
+                              <button mat-icon-button class="cat-action-btn" matTooltip="Editar Categoría" (click)="onEditCategory(cat)">
+                                  <mat-icon>edit</mat-icon>
+                              </button>
+                              <button mat-icon-button class="cat-action-btn" matTooltip="Eliminar Categoría" (click)="onDeleteCategory(cat)">
+                                  <mat-icon>delete_outline</mat-icon>
+                              </button>
+                              <button mat-icon-button class="cat-action-btn" matTooltip="Agregar Factor" (click)="onCreateFactor(cat)">
+                                  <mat-icon>add_circle</mat-icon>
+                              </button>
+                          </div>
+                      </div>
+                      <div class="table-container">
+                        <table mat-table [dataSource]="cat.dataSource" class="factors-premium-table">
+                          <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef>Elemento / Actividad</th>
+                            <td mat-cell *matCellDef="let f" class="factor-name-td">
+                              <div class="name-with-formula">
+                                {{f.name}}
+                                <span class="formula-tag-mini" *ngIf="f.calculation_formula_id">
+                                  <mat-icon>bolt</mat-icon> 
+                                  {{ getFormulaName(f.calculation_formula_id) }}
+                                </span>
+                              </div>
+                            </td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="unit">
+                            <th mat-header-cell *matHeaderCellDef>Unidad</th>
+                            <td mat-cell *matCellDef="let f">
+                              <span class="unit-tag">{{f.unit?.symbol || f.unit?.name || 'N/A'}}</span>
+                            </td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="factor">
+                            <th mat-header-cell *matHeaderCellDef>Factores de Gas (kg/u)</th>
+                            <td mat-cell *matCellDef="let f" class="factor-value-td">
+                              <div class="gases-breakdown" [matTooltip]="'CO2: ' + f.factor_co2 + ' | CH4: ' + f.factor_ch4 + ' | N2O: ' + f.factor_n2o + ' | NF3: ' + f.factor_nf3 + ' | SF6: ' + f.factor_sf6">
+                                <span class="gas">CO₂: {{f.factor_co2}}</span>
+                                <span class="gas-sep">|</span>
+                                <span class="gas">CH₄: {{f.factor_ch4}}</span>
+                                <span class="gas-sep">|</span>
+                                <span class="gas">N₂O: {{f.factor_n2o}}</span>
+                              </div>
+                            </td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                            <td mat-cell *matCellDef="let f">
+                              <div class="factor-actions">
+                                <button mat-icon-button class="small-action-btn" (click)="onEditFactor(f)" matTooltip="Editar"><mat-icon>edit</mat-icon></button>
+                                <button mat-icon-button class="small-action-btn warn" (click)="onDeleteFactor(f)" matTooltip="Eliminar"><mat-icon>delete_outline</mat-icon></button>
+                              </div>
+                            </td>
+                          </ng-container>
+
+                          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="factor-row"></tr>
+                        </table>
+                        <div class="empty-factors-msg" *ngIf="(cat.factors || []).length === 0">
+                           No hay factores vinculados a esta categoría.
                         </div>
-                      </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="unit">
-                      <th mat-header-cell *matHeaderCellDef>Unidad</th>
-                      <td mat-cell *matCellDef="let f">
-                        <span class="unit-tag">{{f.unit?.symbol || f.unit?.name || 'N/A'}}</span>
-                      </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="factor">
-                      <th mat-header-cell *matHeaderCellDef>Factores de Gas (kg/u)</th>
-                      <td mat-cell *matCellDef="let f" class="factor-value-td">
-                        <div class="gases-breakdown" [matTooltip]="'CO2: ' + f.factor_co2 + ' | CH4: ' + f.factor_ch4 + ' | N2O: ' + f.factor_n2o + ' | NF3: ' + f.factor_nf3 + ' | SF6: ' + f.factor_sf6">
-                          <span class="gas">CO₂: {{f.factor_co2}}</span>
-                          <span class="gas-sep">|</span>
-                          <span class="gas">CH₄: {{f.factor_ch4}}</span>
-                          <span class="gas-sep">|</span>
-                          <span class="gas">N₂O: {{f.factor_n2o}}</span>
-                        </div>
-                      </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="actions">
-                      <th mat-header-cell *matHeaderCellDef>Acciones</th>
-                      <td mat-cell *matCellDef="let f">
-                        <div class="factor-actions">
-                          <button mat-icon-button class="small-action-btn" (click)="onEditFactor(f)" matTooltip="Editar"><mat-icon>edit</mat-icon></button>
-                          <button mat-icon-button class="small-action-btn warn" (click)="onDeleteFactor(f)" matTooltip="Eliminar"><mat-icon>delete_outline</mat-icon></button>
-                        </div>
-                      </td>
-                    </ng-container>
-
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="factor-row"></tr>
-                  </table>
-                </div>
+                      </div>
+                    </div>
+                 </div>
               </div>
             </div>
           </div>
@@ -212,6 +397,17 @@ import { CategoryDialog, FactorDialog, ConfirmDialog, FormulaDialog } from '../a
     .filters-bar-prestige { margin-bottom: 24px; }
     .global-search { width: 100%; max-width: 400px; font-size: 13px; }
 
+    .parent-group { margin-bottom: 40px; }
+    .parent-header { 
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 0 8px 12px 8px; border-bottom: 1px solid var(--prestige-border); margin-bottom: 20px;
+    }
+    .parent-title { display: flex; align-items: center; gap: 12px; }
+    .parent-title h2 { margin: 0; font-size: 18px; font-weight: 700; color: var(--prestige-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 8px; }
+    .parent-actions { display: flex; gap: 4px; }
+    .scope-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .parent-stats { font-size: 12px; color: var(--prestige-text-muted); font-weight: 500; }
+
     .category-grid { display: flex; flex-direction: column; gap: 24px; }
     .category-premium-card { padding: 0; overflow: hidden; border: 1px solid var(--prestige-border); }
     
@@ -220,18 +416,11 @@ import { CategoryDialog, FactorDialog, ConfirmDialog, FormulaDialog } from '../a
       background: var(--table-header-bg); border-bottom: 1px solid var(--prestige-border);
     }
     .cat-ident { display: flex; align-items: center; gap: 16px; }
-    .scope-icon { 
-      width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; 
-      justify-content: center; font-weight: 800; font-size: 16px; color: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .scope-1 { background: #1a237e; }
-    .scope-2 { background: #00897b; }
-    .scope-3 { background: #f59e0b; }
-
     .cat-text h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--prestige-text); }
     .cat-meta { font-size: 11px; color: var(--prestige-text-muted); font-weight: 500; }
     .cat-action-btn { color: var(--prestige-primary); width: 40px; height: 40px; }
+
+    .empty-factors-msg { padding: 24px; text-align: center; color: var(--prestige-text-muted); font-size: 13px; font-style: italic; }
 
     .factors-premium-table, .formulas-premium-table { width: 100%; background: transparent; }
     .table-container { width: 100%; overflow-x: auto; }
@@ -283,7 +472,8 @@ export class MetadataManagementComponent implements OnInit {
   activeTab = 0;
   categories: any[] = [];
   formulas: any[] = [];
-  filteredCategories: any[] = [];
+  filteredGroups: any[] = [];
+  orphanCategories: any[] = [];
   formulasDataSource = new MatTableDataSource<any>([]);
 
   displayedColumns = ['name', 'unit', 'factor', 'actions'];
@@ -321,7 +511,7 @@ export class MetadataManagementComponent implements OnInit {
           ...cat,
           dataSource: new MatTableDataSource(cat.factors || [])
         }));
-        this.filteredCategories = [...this.categories];
+        this.rebuildHierarchy(this.categories);
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -331,6 +521,43 @@ export class MetadataManagementComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  rebuildHierarchy(allCats: any[], filter: string = '') {
+    const val = filter.toLowerCase();
+
+    // 1. Identify Parents (no parent_id)
+    const parents = allCats.filter(c => !c.parent_id);
+    const children = allCats.filter(c => c.parent_id);
+
+    this.filteredGroups = parents.map(p => {
+      let matchingChildren = children.filter(c => c.parent_id === p.id);
+
+      if (val) {
+        matchingChildren = matchingChildren.filter(c =>
+          c.name.toLowerCase().includes(val) ||
+          (c.factors || []).some((f: any) => f.name.toLowerCase().includes(val))
+        );
+      }
+
+      const parentMatch = p.name.toLowerCase().includes(val) ||
+        (p.factors || []).some((f: any) => f.name.toLowerCase().includes(val));
+
+      if (val && !parentMatch && matchingChildren.length === 0) return null;
+
+      return { ...p, children: matchingChildren };
+    }).filter(p => p !== null);
+
+    // 2. Orphan categories (parents that are actually children but parent is missing)
+    this.orphanCategories = children.filter(c => !parents.some(p => p.id === c.parent_id));
+
+    // If filtering, also filter orphans
+    if (val) {
+      this.orphanCategories = this.orphanCategories.filter(c =>
+        c.name.toLowerCase().includes(val) ||
+        (c.factors || []).some((f: any) => f.name.toLowerCase().includes(val))
+      );
+    }
   }
 
   getFormulaName(id: number): string {
@@ -375,11 +602,40 @@ export class MetadataManagementComponent implements OnInit {
   onCreateCategory() {
     const dialogRef = this.dialog.open(CategoryDialog, {
       width: '400px',
-      data: { scopes: this.scopes }
+      data: { scopes: this.scopes, categories: this.categories }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.createCategory(result).subscribe(() => this.loadMetadata());
+      }
+    });
+  }
+
+  onEditCategory(category: any) {
+    const dialogRef = this.dialog.open(CategoryDialog, {
+      width: '400px',
+      data: { category: { ...category }, scopes: this.scopes, categories: this.categories }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.updateCategory(category.id, result).subscribe(() => this.loadMetadata());
+      }
+    });
+  }
+
+  onDeleteCategory(category: any) {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Eliminar Categoría',
+        message: `¿Estás seguro de que deseas eliminar la categoría "${category.name}"? Los factores y subcategorías asociados podrían verse afectados.`,
+        confirmText: 'Eliminar',
+        color: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.deleteCategory(category.id).subscribe(() => this.loadMetadata());
       }
     });
   }
@@ -424,24 +680,8 @@ export class MetadataManagementComponent implements OnInit {
   }
 
   applyGlobalFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
-
-    if (!filterValue) {
-      this.filteredCategories = [...this.categories];
-      return;
-    }
-
-    this.filteredCategories = this.categories.map(cat => {
-      const filteredFactors = (cat.factors || []).filter((f: any) =>
-        f.name.toLowerCase().includes(filterValue) ||
-        cat.name.toLowerCase().includes(filterValue)
-      );
-      return {
-        ...cat,
-        dataSource: new MatTableDataSource(filteredFactors),
-        factorsMatch: filteredFactors.length > 0
-      };
-    }).filter(cat => (cat as any).factorsMatch);
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.rebuildHierarchy(this.categories, filterValue);
   }
 
   getScopeColor(id?: number): string {

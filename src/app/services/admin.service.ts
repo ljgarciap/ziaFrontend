@@ -64,6 +64,10 @@ export class AdminService {
         return this.http.post(`${this.apiUrl}/categories`, data);
     }
 
+    updateCategory(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/categories/${id}`, data);
+    }
+
     deleteCategory(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/categories/${id}`);
     }
