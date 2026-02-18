@@ -333,3 +333,9 @@ button[mat-raised-button].mat-accent {
 .delete-btn:hover {
     background: rgba(239, 68, 68, 0.1);
 }
+
+/* Fix for matSuffix (Units) visibility */
+[matSuffix] {
+    color: var(--prestige-text-muted);
+    padding-left: 5px;
+}

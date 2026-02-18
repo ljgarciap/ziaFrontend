@@ -20,6 +20,10 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'dashboard', component: DashboardContentComponent }, // Default view
+            {
+                path: 'history',
+                loadComponent: () => import('./components/history/history').then(m => m.HistoryComponent)
+            },
             { path: 'form', component: FormComponent },
 
 

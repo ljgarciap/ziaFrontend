@@ -302,7 +302,8 @@ export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestr
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Reporte_Zia_${this.selectedCompany.name}_${this.selectedPeriod.year}.pdf`;
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.download = `zia_reporte_${this.selectedCompany.name.toLowerCase().replace(/ /g, '_')}_${this.selectedPeriod.year}_${dateStr}.pdf`;
         link.click();
       }
     });
@@ -315,7 +316,8 @@ export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestr
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Datos_Zia_${this.selectedCompany.name}_${this.selectedPeriod.year}.xlsx`;
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.download = `zia_datos_${this.selectedCompany.name.toLowerCase().replace(/ /g, '_')}_${this.selectedPeriod.year}_${dateStr}.xlsx`;
         link.click();
       }
     });

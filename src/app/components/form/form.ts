@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef, ViewChildren, QueryList, AfterViewInit, Injectable } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ViewChildren, QueryList, AfterViewInit, Injectable, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,6 +14,7 @@ import { MatPaginator, MatPaginatorModule, MatPaginatorIntl } from '@angular/mat
 import { HttpClient } from '@angular/common/http';
 import { MasterDataService } from '../../services/master-data.service';
 import { ContextService } from '../../services/context.service';
+import { AuthService } from '../../services/auth';
 
 @Injectable()
 export class CustomPaginatorIntl extends MatPaginatorIntl {
@@ -58,11 +59,63 @@ export class CustomPaginatorIntl extends MatPaginatorIntl {
   ],
   templateUrl: './form.html',
   styleUrls: ['./form.css'],
+  styles: [`
+    /* --- FORCEFUL DARK MODE FIXES --- */
+
+    /* 1. Container & Global Overrides */
+    :host-context(.dark-theme) .staged-data-container {
+        background: var(--prestige-card-bg) !important;
+        border-color: var(--prestige-border) !important;
+    }
+
+    /* 2. Table Headers & Cells */
+    :host-context(.dark-theme) th.mat-header-cell {
+        background-color: var(--table-header-bg) !important;
+        color: var(--prestige-text-muted) !important;
+        border-bottom-color: var(--prestige-border) !important;
+    }
+
+    :host-context(.dark-theme) td.mat-cell {
+        color: var(--prestige-text) !important;
+        border-bottom-color: var(--prestige-border) !important;
+    }
+
+    /* 3. Paginator (The Nuclear Option) */
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator,
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator-container { 
+        background: transparent !important; 
+        background-color: transparent !important;
+        color: var(--prestige-text-muted) !important; 
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator .mat-mdc-select-value { color: var(--prestige-text) !important; }
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator .mat-mdc-select-arrow { color: var(--prestige-text-muted) !important; }
+
+    /* Button Colors */
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button { 
+        color: var(--prestige-text) !important; 
+    }
+    
+    /* Disabled logic: Reduce opacity but keep color visible */
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button[disabled] { 
+        color: var(--prestige-text) !important; 
+        opacity: 0.5 !important;
+    }
+
+    /* Force icon color inheritance */
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button .mat-icon {
+        color: currentColor !important;
+    }
+    
+    /* 4. Light/Dark Mode Border Consistency */
+    ::ng-deep .mat-mdc-paginator { border-top: 1px solid var(--prestige-border) !important; }
+  `]
 })
 export class FormComponent implements AfterViewInit {
   private http = inject(HttpClient);
   private masterDataService = inject(MasterDataService);
   private contextService = inject(ContextService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   // Context Selection
@@ -98,13 +151,27 @@ export class FormComponent implements AfterViewInit {
 
   ngOnInit() {
     this.loadMasterData();
-    this.loadCompanies();
 
+    const context = this.authService.currentContext();
     const initialCompany = this.contextService.selectedCompany();
-    if (initialCompany) {
-      this.selectedCompany = initialCompany;
-      this.loadPeriods(initialCompany.id);
-      this.loadMasterData(initialCompany.id);
+
+    if (context && context.type === 'company') {
+      // Lock to this company
+      this.selectedCompany = { id: context.id, name: context.label };
+      this.companies = [this.selectedCompany];
+      // Load data immediately for this context
+      this.loadPeriods(context.id!);
+      this.loadMasterData(context.id);
+    } else {
+      // Global admin or no context - load all
+      this.loadCompanies();
+
+      // Use contextService selection if available and allowed
+      if (initialCompany) {
+        this.selectedCompany = initialCompany;
+        this.loadPeriods(initialCompany.id);
+        this.loadMasterData(initialCompany.id);
+      }
     }
   }
 

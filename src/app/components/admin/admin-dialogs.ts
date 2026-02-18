@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { AdminService } from '../../services/admin.service';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-company-dialog',
@@ -42,7 +43,7 @@ import { AdminService } from '../../services/admin.service';
             <mat-label>Sector</mat-label>
             <mat-select formControlName="company_sector_id">
               <mat-option *ngFor="let s of data.sectors" [value]="s.id">{{s.name}}</mat-option>
-              <mat-option *ngIf="!data.sectors?.length" disabled>No hay sectores disponibles</mat-option>
+              <mat-option *ngIf="!data.sectors.length" disabled>No hay sectores disponibles</mat-option>
             </mat-select>
           </mat-form-field>
         </form>
@@ -175,12 +176,19 @@ export class SectorDialog {
             </mat-form-field>
           </div>
 
-          <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline">
             <mat-label>Rol / Nivel de Acceso</mat-label>
             <mat-select formControlName="role">
               <mat-option value="user">Usuario</mat-option>
-              <mat-option value="admin">Administrador</mat-option>
-              <mat-option value="superadmin">Super Admin</mat-option>
+              <mat-option value="admin" *ngIf="['superadmin'].includes(currentUserRole)">Administrador</mat-option>
+              <mat-option value="superadmin" *ngIf="['superadmin'].includes(currentUserRole)">Super Admin</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" *ngIf="form.get('role')?.value === 'user'">
+            <mat-label>Empresas Asociadas</mat-label>
+            <mat-select formControlName="companies" multiple>
+              <mat-option *ngFor="let c of data.allCompanies" [value]="c.id">{{c.name}}</mat-option>
             </mat-select>
           </mat-form-field>
         </form>
@@ -196,16 +204,24 @@ export class SectorDialog {
 })
 export class UserDialog {
   form: FormGroup;
+  currentUserRole: string = 'user';
 
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<UserDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private authService: AuthService
   ) {
+    const context = authService.currentContext();
+    this.currentUserRole = context?.role || authService.currentUser()?.role || 'user';
+
+    const userCompanyIds = data.companies?.map((c: any) => c.id) || [];
+
     this.form = this.fb.group({
       name: [data.name || '', Validators.required],
       email: [data.email || '', [Validators.required, Validators.email]],
-      role: [data.role || 'user', Validators.required]
+      role: [data.role || 'user', Validators.required],
+      companies: [userCompanyIds]
     });
   }
 
