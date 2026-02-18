@@ -34,6 +34,16 @@
                     <mat-icon matListItemIcon>settings_suggest</mat-icon>
                     <div matListItemTitle>Factores</div>
                 </a>
+                <a *ngIf="['superadmin', 'admin'].includes(authService.currentUser()?.role)" mat-list-item
+                    routerLink="/admin/units" routerLinkActive="active-link">
+                    <mat-icon matListItemIcon>straighten</mat-icon>
+                    <div matListItemTitle>Unidades</div>
+                </a>
+                <a *ngIf="['superadmin', 'admin'].includes(authService.currentUser()?.role)" mat-list-item
+                    routerLink="/admin/scopes" routerLinkActive="active-link">
+                    <mat-icon matListItemIcon>category</mat-icon>
+                    <div matListItemTitle>Alcances</div>
+                </a>
             </ng-container>
 
             <mat-divider></mat-divider>

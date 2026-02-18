@@ -117,4 +117,38 @@ export class AdminService {
     deleteFormula(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/formulas/${id}`);
     }
+
+    // Measurement Units
+    getUnits(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/units`);
+    }
+
+    createUnit(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/units`, data);
+    }
+
+    updateUnit(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/units/${id}`, data);
+    }
+
+    deleteUnit(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/units/${id}`);
+    }
+
+    // Scopes
+    getScopes(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/scopes`);
+    }
+
+    createScope(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/scopes`, data);
+    }
+
+    updateScope(id: number, data: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/scopes/${id}`, data);
+    }
+
+    deleteScope(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/scopes/${id}`);
+    }
 }

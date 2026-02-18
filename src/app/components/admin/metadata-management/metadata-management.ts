@@ -66,7 +66,9 @@ import { CategoryDialog, FactorDialog, ConfirmDialog, FormulaDialog } from '../a
               <div class="glass-card category-premium-card" *ngFor="let cat of filteredCategories">
                 <div class="cat-brand-header">
                     <div class="cat-ident">
-                        <div class="scope-icon" [ngClass]="'scope-' + cat.scope">{{cat.scope}}</div>
+                        <div class="scope-icon" [style.background-color]="getScopeColor(cat.scope?.id)">
+                          {{cat.scope?.id}}
+                        </div>
                         <div class="cat-text">
                           <h3>{{cat.name}}</h3>
                           <span class="cat-meta">{{(cat.factors || []).length}} Factores vinculados</span>
@@ -97,7 +99,7 @@ import { CategoryDialog, FactorDialog, ConfirmDialog, FormulaDialog } from '../a
                     <ng-container matColumnDef="unit">
                       <th mat-header-cell *matHeaderCellDef>Unidad</th>
                       <td mat-cell *matCellDef="let f">
-                        <span class="unit-tag">{{f.unit}}</span>
+                        <span class="unit-tag">{{f.unit?.symbol || f.unit?.name || 'N/A'}}</span>
                       </td>
                     </ng-container>
 
@@ -287,8 +289,17 @@ export class MetadataManagementComponent implements OnInit {
   displayedColumns = ['name', 'unit', 'factor', 'actions'];
   loading = true;
 
+  scopes: any[] = [];
+  units: any[] = [];
+
   ngOnInit() {
     this.loadData();
+    this.loadOptions();
+  }
+
+  loadOptions() {
+    this.adminService.getScopes().subscribe(data => this.scopes = data || []);
+    this.adminService.getUnits().subscribe(data => this.units = data || []);
   }
 
   loadData() {
@@ -362,7 +373,10 @@ export class MetadataManagementComponent implements OnInit {
   }
 
   onCreateCategory() {
-    const dialogRef = this.dialog.open(CategoryDialog, { width: '400px' });
+    const dialogRef = this.dialog.open(CategoryDialog, {
+      width: '400px',
+      data: { scopes: this.scopes }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.createCategory(result).subscribe(() => this.loadMetadata());
@@ -372,7 +386,7 @@ export class MetadataManagementComponent implements OnInit {
 
   onCreateFactor(category: any) {
     const dialogRef = this.dialog.open(FactorDialog, {
-      data: { factor: {}, formulas: this.formulas }
+      data: { factor: {}, formulas: this.formulas, units: this.units }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -428,5 +442,14 @@ export class MetadataManagementComponent implements OnInit {
         factorsMatch: filteredFactors.length > 0
       };
     }).filter(cat => (cat as any).factorsMatch);
+  }
+
+  getScopeColor(id?: number): string {
+    switch (id) {
+      case 1: return '#1a237e';
+      case 2: return '#00897b';
+      case 3: return '#f59e0b';
+      default: return '#64748b';
+    }
   }
 }

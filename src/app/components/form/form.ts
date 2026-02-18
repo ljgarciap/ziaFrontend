@@ -79,17 +79,19 @@ export class FormComponent implements AfterViewInit {
   huella = '';
   showDebug = false; // Toggle for JSON debug
 
-  // Data Store (MatTableDataSource)
-  scope1DataSource = new MatTableDataSource<any>([]);
-  scope2DataSource = new MatTableDataSource<any>([]);
-  scope3DataSource = new MatTableDataSource<any>([]);
+  // Data Store (Dynamic)
+  dataSources: { [key: number]: MatTableDataSource<any> } = {};
 
   get hasData(): boolean {
-    return this.scope1DataSource.data.length > 0 ||
-      this.scope2DataSource.data.length > 0 ||
-      this.scope3DataSource.data.length > 0;
+    return Object.values(this.dataSources).some(ds => ds.data.length > 0);
   }
 
+  get debugKeys(): number[] {
+    return Object.keys(this.dataSources).map(k => parseInt(k));
+  }
+
+  // Common properties
+  Object = Object; // Expose Object to template
   displayedColumns: string[] = ['source', 'quantity', 'totalCO2e', 'actions'];
 
   @ViewChildren(MatPaginator) paginators!: QueryList<MatPaginator>;
@@ -106,25 +108,9 @@ export class FormComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Assign paginators when they become available
     this.paginators.changes.subscribe(() => {
-      this.linkPaginators();
+      this.assignPaginators();
     });
-  }
-
-  linkPaginators() {
-    const paginatorArray = this.paginators.toArray();
-    // Assuming order matches scopes 1, 2, 3 in the template
-    // Note: Since they are in *ngSwitch, they might not all exist at once or order might vary.
-    // However, the template iterates scopes generally.
-    // Better strategy: Assign individually when access is needed or check array content.
-
-    // For now, let's try to assign if they exist. 
-    // Since scopes are rendered dynamically, we might need a more robust way if we had many scopes.
-    // Given the template structure, we have paginators inside *ngSwitchCase.
-
-    // We will assign manually in addEmission or assume order if all rendered.
-    // Actually, with *ngSwitch, they are conditional. 
   }
 
   loadCompanies() {
@@ -167,6 +153,14 @@ export class FormComponent implements AfterViewInit {
         ...scope,
         categories: scope.categories.map((cat: any) => this.processCategory(cat))
       }));
+
+      // Initialize DataSources for each scope
+      this.scopes.forEach(scope => {
+        if (!this.dataSources[scope.id]) {
+          this.dataSources[scope.id] = new MatTableDataSource<any>([]);
+        }
+      });
+
       this.cdr.detectChanges();
     });
   }
@@ -191,7 +185,7 @@ export class FormComponent implements AfterViewInit {
     return isNaN(cleaned) ? 0 : cleaned;
   }
 
-  addEmission(category: any, scopeId: number) {
+  addEmission(category: any, scopeId: number, parentName?: string) {
     if (!this.selectedCompany || !this.selectedPeriod) {
       alert('Por favor selecciona una Empresa y un Periodo antes de cargar datos.');
       return;
@@ -204,31 +198,31 @@ export class FormComponent implements AfterViewInit {
     const totalCO2e = amount * parseFloat(factor.factor_total_co2e);
 
     const item = {
-      type: category.name,
+      type: parentName ? `${parentName} > ${category.name}` : category.name, // Include parent hierarchy
       subtype: factor.name,
       quantity: amount,
       unit: factor.unit?.symbol || factor.unit?.name || '',
       emissionFactorId: factor.id,
       totalCO2e: totalCO2e,
-      source: category.name
+      source: category.name,
+      originalCategory: parentName || category.name
     };
 
-    if (scopeId === 1) {
-      const data = this.scope1DataSource.data;
-      data.unshift(item); // Add to top
-      this.scope1DataSource.data = data;
-      this.updatePaginator(this.scope1DataSource, 0);
-    } else if (scopeId === 2) {
-      const data = this.scope2DataSource.data;
-      data.unshift(item);
-      this.scope2DataSource.data = data;
-      this.updatePaginator(this.scope2DataSource, 0); // Logic to find correct paginator needed if dynamic
-    } else if (scopeId === 3) {
-      const data = this.scope3DataSource.data;
-      data.unshift(item);
-      this.scope3DataSource.data = data;
-      this.updatePaginator(this.scope3DataSource, 0);
+    // Dynamic Add
+    if (!this.dataSources[scopeId]) {
+      this.dataSources[scopeId] = new MatTableDataSource<any>([]);
     }
+
+    const dataSource = this.dataSources[scopeId];
+    const data = dataSource.data;
+    data.unshift(item);
+    dataSource.data = data;
+
+    // Trigger change detection to render the table and paginator
+    this.cdr.detectChanges();
+
+    // Attempt to link paginator after view update
+    setTimeout(() => this.assignPaginators());
 
     category.selectedFactor = null;
     category.inputAmount = '';
@@ -238,93 +232,28 @@ export class FormComponent implements AfterViewInit {
     }
   }
 
-  // Helper to link paginator dynamically. 
-  // In a real app with ngSwitch, we might need a more robust mapping. 
-  // For now, since we only have 3 scopes, we can try to find them by associating with the scope index.
-  // BUT: paginators query list includes ONLY rendered paginators.
-  // Since scopes are in ngSwitch, usually only ONE is visible per scope iteration? 
-  // No, the ngSwitch is inside the *ngFor of scopes. 
-  // So for each scope in the loop, we render a table. ALL enabled scope tables are rendered if they have data.
-  // We can just re-assign all paginators whenever we add data.
+  assignPaginators() {
+    // We need to match paginators to scopes.
+    // The *ngFor iterates scopes. If a scope has data, it renders a table and a paginator.
 
-  updatePaginator(dataSource: MatTableDataSource<any>, scopeIndex: number) {
-    // We need to wait for view update? 
-    // The paginator should be in the view if data > 0.
-    setTimeout(() => {
-      // Simple heuristic: match paginator by order?
-      // Or cleaner: Assign in HTML using template reference variable passed to function? 
-      // We can't pass template ref easily to TS without @ViewChild.
-      // Let's use the QueryList.
+    const visibleScopes = this.scopes.filter(s => this.dataSources[s.id]?.data.length > 0);
+    const paginators = this.paginators.toArray();
 
-      // Since we have 3 potential tables, let's map them.
-      // We need to know which paginator belongs to which scope.
-      // It's tricky with QueryList order if some are missing.
-      // Better approach: In HTML, simply use [dataSource]="scopeXDataSource" and <mat-paginator [length]="...">.
-      // Actually MatTableDataSource automatically listens to paginator if assigned.
-      // dataSource.paginator = paginator.
-
-      const paginators = this.paginators.toArray();
-      // This is fragile if we don't know the mapping.
-      // Given complexity, let's just use a trick: 
-      // We will assign the paginator in the template using a setter or method if possible? No.
-
-      // Let's just try to assign ANY unassigned paginator or just match by scope ID if we can tag them.
-      // Or simply: 
-      if (dataSource === this.scope1DataSource && paginators.length > 0) {
-        // Find the one inside scope 1 container? Can't easily tell.
-        // Let's assume sequential order of rendered scopes.
-        // Keep it simple: Reset all.
-        this.assignPaginators();
-      } else {
-        this.assignPaginators();
+    visibleScopes.forEach((scope, index) => {
+      if (paginators[index] && this.dataSources[scope.id]) {
+        this.dataSources[scope.id].paginator = paginators[index];
       }
     });
   }
 
-  assignPaginators() {
-    const paginators = this.paginators.toArray();
-    // This logic is tricky without deterministic ordering.
-    // However, the *ngFor="let scope of scopes" renders them in order.
-    // scope 1, then 2, then 3.
-    // So paginators[0] should be Scope 1 (if visible), [1] Scope 2, etc.
-    // BUT we only render the table `*ngIf="data.length > 0"`.
-
-    let cleanPaginators = paginators.slice();
-
-    if (this.scope1DataSource.data.length > 0 && cleanPaginators.length > 0) {
-      this.scope1DataSource.paginator = cleanPaginators.shift() || null;
-    }
-    if (this.scope2DataSource.data.length > 0 && cleanPaginators.length > 0) {
-      this.scope2DataSource.paginator = cleanPaginators.shift() || null;
-    }
-    if (this.scope3DataSource.data.length > 0 && cleanPaginators.length > 0) {
-      this.scope3DataSource.paginator = cleanPaginators.shift() || null;
-    }
-  }
-
   removeEmission(item: any, scopeId: number) {
-    if (scopeId === 1) {
-      const data = this.scope1DataSource.data;
+    if (this.dataSources[scopeId]) {
+      const dataSource = this.dataSources[scopeId];
+      const data = dataSource.data;
       const index = data.indexOf(item);
       if (index > -1) {
         data.splice(index, 1);
-        this.scope1DataSource.data = data;
-        this.assignPaginators();
-      }
-    } else if (scopeId === 2) {
-      const data = this.scope2DataSource.data;
-      const index = data.indexOf(item);
-      if (index > -1) {
-        data.splice(index, 1);
-        this.scope2DataSource.data = data;
-        this.assignPaginators();
-      }
-    } else if (scopeId === 3) {
-      const data = this.scope3DataSource.data;
-      const index = data.indexOf(item);
-      if (index > -1) {
-        data.splice(index, 1);
-        this.scope3DataSource.data = data;
+        dataSource.data = data;
         this.assignPaginators();
       }
     }
@@ -333,12 +262,13 @@ export class FormComponent implements AfterViewInit {
   onSubmit() {
     const apiData = {
       uid: 'CURRENT_USER_ID',
-      data: {
-        scope1: this.scope1DataSource.data,
-        scope2: this.scope2DataSource.data,
-        scope3: this.scope3DataSource.data
-      }
+      data: {} as any
     };
+
+    Object.keys(this.dataSources).forEach(key => {
+      apiData.data[`scope${key}`] = this.dataSources[parseInt(key)].data;
+    });
+
     console.log('Submitting Data:', apiData);
   }
 }

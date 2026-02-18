@@ -246,7 +246,11 @@ export class UserDialog {
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Unidad</mat-label>
-              <input matInput formControlName="unit" placeholder="Ej: kWh, gal, m3">
+              <mat-select formControlName="measurement_unit_id">
+                <mat-option *ngFor="let u of data.units" [value]="u.id">
+                  {{u.name}} ({{u.symbol}})
+                </mat-option>
+              </mat-select>
             </mat-form-field>
           </div>
           
@@ -304,12 +308,12 @@ export class FactorDialog {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<FactorDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: { factor: any, formulas: any[] }
+    @Inject(MAT_DIALOG_DATA) public data: { factor: any, formulas: any[], units: any[] }
   ) {
     const f = data.factor || {};
     this.form = this.fb.group({
       name: [f.name || '', Validators.required],
-      unit: [f.unit || '', Validators.required],
+      measurement_unit_id: [f.measurement_unit_id || f.unit?.id || null, Validators.required],
       factor_co2: [f.factor_co2 || 0, [Validators.required, Validators.min(0)]],
       factor_ch4: [f.factor_ch4 || 0, [Validators.required, Validators.min(0)]],
       factor_n2o: [f.factor_n2o || 0, [Validators.required, Validators.min(0)]],
@@ -425,16 +429,16 @@ export class FormulaDialog {
           
           <mat-form-field appearance="outline">
             <mat-label>Alcance (Scope)</mat-label>
-            <mat-select formControlName="scope">
-              <mat-optgroup label="Emisiones Directas">
-                <mat-option [value]="1">Alcance 1 (Combustibles, Fugas...)</mat-option>
-              </mat-optgroup>
-              <mat-optgroup label="Emisiones Indirectas de Energía">
-                <mat-option [value]="2">Alcance 2 (Consumo Eléctrico)</mat-option>
-              </mat-optgroup>
-              <mat-optgroup label="Otras Emisiones Indirectas">
-                <mat-option [value]="3">Alcance 3 (Proveedores, Viajes...)</mat-option>
-              </mat-optgroup>
+            <mat-select formControlName="scope_id">
+              <mat-select-trigger>
+                {{ selectedScope?.name }}
+              </mat-select-trigger>
+              <mat-option *ngFor="let s of data.scopes" [value]="s.id">
+                <div style="line-height: 1.3; padding: 4px 0;">
+                  <div style="font-weight: 500; font-size: 14px;">{{s.name}}</div>
+                  <div style="font-size: 11px; color: #64748b; white-space: normal;">{{s.description}}</div>
+                </div>
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </form>
@@ -458,8 +462,13 @@ export class CategoryDialog {
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
-      scope: [1, Validators.required]
+      scope_id: [data.scopes?.[0]?.id || 1, Validators.required]
     });
+  }
+
+  get selectedScope() {
+    const id = this.form.get('scope_id')?.value;
+    return this.data.scopes?.find((s: any) => s.id === id);
   }
 
   onSave() {
@@ -507,5 +516,136 @@ export class ConfirmDialog {
 
   onCancel() {
     this.dialogRef.close(false);
+  }
+}
+
+@Component({
+  selector: 'app-unit-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
+  template: `
+    <div class="zia-dialog-premium">
+      <h2 mat-dialog-title>{{ data.id ? 'Editar Unidad' : 'Nueva Unidad' }}</h2>
+      <mat-dialog-content>
+        <form [formGroup]="form" class="zia-form-compact">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="name" placeholder="Ej: Kilogramos">
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Símbolo</mat-label>
+            <input matInput formControlName="symbol" placeholder="Ej: kg">
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">Cancelar</button>
+        <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="onSave()">
+          {{ data.id ? 'Guardar Cambios' : 'Crear Unidad' }}
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `
+})
+export class UnitDialog {
+  form: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    public dialogRef: MatDialogRef<UnitDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.form = this.fb.group({
+      name: [data.name || '', Validators.required],
+      symbol: [data.symbol || '', Validators.required]
+    });
+  }
+
+  onSave() {
+    if (this.form.valid) {
+      this.dialogRef.close(this.form.value);
+    }
+  }
+
+  onCancel() {
+    this.dialogRef.close();
+  }
+}
+
+@Component({
+  selector: 'app-scope-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
+  template: `
+    <div class="zia-dialog-premium">
+      <h2 mat-dialog-title>{{ data.id ? 'Editar Alcance: ' + data.name : 'Nuevo Alcance' }}</h2>
+      <mat-dialog-content>
+        <form [formGroup]="form" class="zia-form-compact">
+          <mat-form-field appearance="outline" *ngIf="!data.id">
+            <mat-label>Nombre del Alcance</mat-label>
+            <input matInput formControlName="name" placeholder="Ej: Alcance 4 (Opcional)">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Descripción Corta</mat-label>
+            <textarea matInput formControlName="description" rows="2"></textarea>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Documentación / Ayuda</mat-label>
+            <textarea matInput formControlName="documentation_text" rows="5"></textarea>
+            <mat-hint>Texto que se muestra en el acordeón del formulario</mat-hint>
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">Cancelar</button>
+        <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="onSave()">
+          {{ data.id ? 'Guardar Cambios' : 'Crear Alcance' }}
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `
+})
+export class ScopeDialog {
+  form: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    public dialogRef: MatDialogRef<ScopeDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.form = this.fb.group({
+      name: [data.name || '', data.id ? [] : Validators.required],
+      description: [data.description || ''],
+      documentation_text: [data.documentation_text || '']
+    });
+  }
+
+  onSave() {
+    if (this.form.valid) {
+      this.dialogRef.close(this.form.value);
+    }
+  }
+
+  onCancel() {
+    this.dialogRef.close();
   }
 }

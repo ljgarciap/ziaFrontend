@@ -102,7 +102,7 @@
 
                                                 <div class="action-row">
                                                     <button mat-raised-button color="primary"
-                                                        (click)="addEmission(subcat, scope.id)">
+                                                        (click)="addEmission(subcat, scope.id, category.name)">
                                                         Cargar
                                                     </button>
                                                 </div>
@@ -171,150 +171,51 @@
 
                     <!-- Right Column: Staged Data -->
                     <div class="right-column">
-                        <ng-container [ngSwitch]="scope.id">
-                            <!-- Scope 1 Table -->
-                            <ng-container *ngSwitchCase="1">
-                                <div class="staged-data-container" *ngIf="scope1DataSource.data.length > 0">
-                                    <div class="staged-data-header">Items Agregados</div>
+                        <ng-container *ngIf="dataSources[scope.id] && dataSources[scope.id].data.length > 0">
+                            <div class="staged-data-container">
+                                <div class="staged-data-header">Items Agregados</div>
 
-                                    <table mat-table [dataSource]="scope1DataSource" class="staged-table">
-                                        <!-- Source Column -->
-                                        <ng-container matColumnDef="source">
-                                            <th mat-header-cell *matHeaderCellDef> Fuente </th>
-                                            <td mat-cell *matCellDef="let item">
-                                                <strong>{{ item.type }}</strong><br>
-                                                <small>{{ item.subtype }}</small>
-                                            </td>
-                                        </ng-container>
+                                <table mat-table [dataSource]="dataSources[scope.id]" class="staged-table">
+                                    <!-- Source Column -->
+                                    <ng-container matColumnDef="source">
+                                        <th mat-header-cell *matHeaderCellDef> Fuente </th>
+                                        <td mat-cell *matCellDef="let item">
+                                            <strong>{{ item.type }}</strong><br>
+                                            <small>{{ item.subtype }}</small>
+                                        </td>
+                                    </ng-container>
 
-                                        <!-- Quantity Column -->
-                                        <ng-container matColumnDef="quantity">
-                                            <th mat-header-cell *matHeaderCellDef> Cantidad </th>
-                                            <td mat-cell *matCellDef="let item"> {{ item.quantity }} {{ item.unit }}
-                                            </td>
-                                        </ng-container>
+                                    <!-- Quantity Column -->
+                                    <ng-container matColumnDef="quantity">
+                                        <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+                                        <td mat-cell *matCellDef="let item"> {{ item.quantity }} {{ item.unit }}
+                                        </td>
+                                    </ng-container>
 
-                                        <!-- CO2e Column -->
-                                        <ng-container matColumnDef="totalCO2e">
-                                            <th mat-header-cell *matHeaderCellDef> tCO₂e </th>
-                                            <td mat-cell *matCellDef="let item"> {{ item.totalCO2e | number:'1.2-4' }}
-                                            </td>
-                                        </ng-container>
+                                    <!-- CO2e Column -->
+                                    <ng-container matColumnDef="totalCO2e">
+                                        <th mat-header-cell *matHeaderCellDef> tCO₂e </th>
+                                        <td mat-cell *matCellDef="let item"> {{ item.totalCO2e | number:'1.2-4' }}
+                                        </td>
+                                    </ng-container>
 
-                                        <!-- Actions Column -->
-                                        <ng-container matColumnDef="actions">
-                                            <th mat-header-cell *matHeaderCellDef> </th>
-                                            <td mat-cell *matCellDef="let item">
-                                                <button class="delete-btn" (click)="removeEmission(item, 1)"
-                                                    title="Eliminar">
-                                                    <mat-icon>delete</mat-icon>
-                                                </button>
-                                            </td>
-                                        </ng-container>
+                                    <!-- Actions Column -->
+                                    <ng-container matColumnDef="actions">
+                                        <th mat-header-cell *matHeaderCellDef> </th>
+                                        <td mat-cell *matCellDef="let item">
+                                            <button class="delete-btn" (click)="removeEmission(item, scope.id)"
+                                                title="Eliminar">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </td>
+                                    </ng-container>
 
-                                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                                    </table>
-                                    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-                                        aria-label="Select page"></mat-paginator>
-                                </div>
-                            </ng-container>
-
-                            <!-- Scope 2 Table -->
-                            <ng-container *ngSwitchCase="2">
-                                <div class="staged-data-container" *ngIf="scope2DataSource.data.length > 0">
-                                    <div class="staged-data-header">Items Agregados</div>
-
-                                    <table mat-table [dataSource]="scope2DataSource" class="staged-table">
-                                        <!-- Source Column -->
-                                        <ng-container matColumnDef="source">
-                                            <th mat-header-cell *matHeaderCellDef> Fuente </th>
-                                            <td mat-cell *matCellDef="let item">
-                                                <strong>{{ item.type }}</strong><br>
-                                                <small>{{ item.subtype }}</small>
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- Quantity Column -->
-                                        <ng-container matColumnDef="quantity">
-                                            <th mat-header-cell *matHeaderCellDef> Cantidad </th>
-                                            <td mat-cell *matCellDef="let item"> {{ item.quantity }} {{ item.unit }}
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- CO2e Column -->
-                                        <ng-container matColumnDef="totalCO2e">
-                                            <th mat-header-cell *matHeaderCellDef> tCO₂e </th>
-                                            <td mat-cell *matCellDef="let item"> {{ item.totalCO2e | number:'1.2-4' }}
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- Actions Column -->
-                                        <ng-container matColumnDef="actions">
-                                            <th mat-header-cell *matHeaderCellDef> </th>
-                                            <td mat-cell *matCellDef="let item">
-                                                <button class="delete-btn" (click)="removeEmission(item, 2)"
-                                                    title="Eliminar">
-                                                    <mat-icon>delete</mat-icon>
-                                                </button>
-                                            </td>
-                                        </ng-container>
-
-                                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                                    </table>
-                                    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-                                        aria-label="Select page"></mat-paginator>
-                                </div>
-                            </ng-container>
-
-                            <!-- Scope 3 Table -->
-                            <ng-container *ngSwitchCase="3">
-                                <div class="staged-data-container" *ngIf="scope3DataSource.data.length > 0">
-                                    <div class="staged-data-header">Items Agregados</div>
-
-                                    <table mat-table [dataSource]="scope3DataSource" class="staged-table">
-                                        <!-- Source Column -->
-                                        <ng-container matColumnDef="source">
-                                            <th mat-header-cell *matHeaderCellDef> Fuente </th>
-                                            <td mat-cell *matCellDef="let item">
-                                                <strong>{{ item.type }}</strong><br>
-                                                <small>{{ item.subtype }}</small>
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- Quantity Column -->
-                                        <ng-container matColumnDef="quantity">
-                                            <th mat-header-cell *matHeaderCellDef> Cantidad </th>
-                                            <td mat-cell *matCellDef="let item"> {{ item.quantity }} {{ item.unit }}
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- CO2e Column -->
-                                        <ng-container matColumnDef="totalCO2e">
-                                            <th mat-header-cell *matHeaderCellDef> tCO₂e </th>
-                                            <td mat-cell *matCellDef="let item"> {{ item.totalCO2e | number:'1.2-4' }}
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- Actions Column -->
-                                        <ng-container matColumnDef="actions">
-                                            <th mat-header-cell *matHeaderCellDef> </th>
-                                            <td mat-cell *matCellDef="let item">
-                                                <button class="delete-btn" (click)="removeEmission(item, 3)"
-                                                    title="Eliminar">
-                                                    <mat-icon>delete</mat-icon>
-                                                </button>
-                                            </td>
-                                        </ng-container>
-
-                                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                                    </table>
-                                    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-                                        aria-label="Select page"></mat-paginator>
-                                </div>
-                            </ng-container>
+                                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                </table>
+                                <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+                                    aria-label="Select page"></mat-paginator>
+                            </div>
                         </ng-container>
                     </div>
                 </div>
@@ -337,11 +238,11 @@
         </button>
     </div>
 
-    <div class="debug-section"
-        *ngIf="showDebug && (scope1DataSource.data.length > 0 || scope2DataSource.data.length > 0 || scope3DataSource.data.length > 0)">
+    <div class="debug-section" *ngIf="showDebug && hasData">
         <h3>Datos Cargados:</h3>
-        <pre>Scope 1: {{ scope1DataSource.data | json }}</pre>
-        <pre>Scope 2: {{ scope2DataSource.data | json }}</pre>
-        <pre>Scope 3: {{ scope3DataSource.data | json }}</pre>
+        <div *ngFor="let key of debugKeys">
+            <pre
+                *ngIf="(dataSources[key]?.data?.length || 0) > 0">Scope {{key}}: {{ dataSources[key]?.data | json }}</pre>
+        </div>
     </div>
 </div>
