@@ -151,4 +151,9 @@ export class AdminService {
     deleteScope(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/scopes/${id}`);
     }
+
+    // Audit Logs
+    getAuditLogs(params: any = {}): Observable<any> {
+        return this.http.get(`${this.apiUrl}/audit-logs`, { params });
+    }
 }

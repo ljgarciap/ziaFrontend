@@ -60,6 +60,12 @@ export const routes: Routes = [
                 canActivate: [roleGuard],
                 data: { roles: ['superadmin', 'admin'] }
             },
+            {
+                path: 'admin/audit',
+                loadComponent: () => import('./components/admin/audit-logs/audit-logs').then(m => m.AuditLogsComponent),
+                canActivate: [roleGuard],
+                data: { roles: ['superadmin'] }
+            },
 
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ]

@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router'; // Added Router
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -7,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ContextSelectorComponent } from '../context-selector/context-selector';
 import { DashboardService } from '../../services/dashboard.service';
 import { ContextService } from '../../services/context.service';
+import { AuthService } from '../../services/auth'; // Added AuthService
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -37,6 +39,11 @@ import { MatButtonModule } from '@angular/material/button';
             </div>
             
             <div class="header-actions">
+                <button mat-stroked-button class="audit-btn" (click)="goToAudit()" *ngIf="isSuperAdmin">
+                    <mat-icon>security</mat-icon>
+                    AUDITORÍA
+                </button>
+
                 <button mat-flat-button color="primary" [matMenuTriggerFor]="reportMenu" *ngIf="selectedPeriod">
                     <mat-icon>download</mat-icon>
                     GENERAR REPORTES
@@ -162,6 +169,7 @@ import { MatButtonModule } from '@angular/material/button';
     .dashboard-header h1 { font-size: 28px; font-weight: 700; color: var(--prestige-primary); margin: 0; }
     .dashboard-header p { color: var(--prestige-text-muted); font-size: 14px; }
     .header-actions { display: flex; align-items: center; gap: 16px; }
+    .audit-btn { border-color: var(--prestige-primary); color: var(--prestige-primary); font-weight: 600; }
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; margin-top: 24px;}
     .summary-card { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s; }
     .summary-card:hover { transform: translateY(-4px); }
@@ -195,6 +203,8 @@ import { MatButtonModule } from '@angular/material/button';
 export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestroy {
   private dashboardService = inject(DashboardService);
   private context = inject(ContextService);
+  private authService = inject(AuthService); // Injected
+  private router = inject(Router); // Injected
   private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('donutChart') donutCanvas!: ElementRef;
@@ -206,6 +216,14 @@ export class DashboardContentComponent implements OnInit, AfterViewInit, OnDestr
 
   selectedCompany: any = null;
   selectedPeriod: any = null;
+
+  get isSuperAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'superadmin';
+  }
+
+  goToAudit() {
+    this.router.navigate(['/admin/audit']);
+  }
 
   private donutChartInst: any;
   private lineChartInst: any;
