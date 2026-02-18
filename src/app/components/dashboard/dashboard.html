@@ -10,6 +10,11 @@
                 <mat-icon matListItemIcon>assignment</mat-icon>
                 <div matListItemTitle>Huella de Carbono</div>
             </a>
+            <a *ngIf="authService.currentContext()?.role === 'user'" mat-list-item routerLink="/history"
+                routerLinkActive="active-link">
+                <mat-icon matListItemIcon>history</mat-icon>
+                <div matListItemTitle>Historial</div>
+            </a>
 
             <!-- Admin Section -->
             <ng-container *ngIf="['superadmin', 'admin'].includes(authService.currentContext()?.role || '')">
