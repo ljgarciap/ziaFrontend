@@ -14,6 +14,7 @@ import { MatPaginator, MatPaginatorModule, MatPaginatorIntl } from '@angular/mat
 import { HttpClient } from '@angular/common/http';
 import { MasterDataService } from '../../services/master-data.service';
 import { ContextService } from '../../services/context.service';
+import { AuthService } from '../../services/auth';
 
 @Injectable()
 export class CustomPaginatorIntl extends MatPaginatorIntl {
@@ -63,6 +64,7 @@ export class FormComponent implements AfterViewInit {
   private http = inject(HttpClient);
   private masterDataService = inject(MasterDataService);
   private contextService = inject(ContextService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   // Context Selection
@@ -98,13 +100,27 @@ export class FormComponent implements AfterViewInit {
 
   ngOnInit() {
     this.loadMasterData();
-    this.loadCompanies();
 
+    const context = this.authService.currentContext();
     const initialCompany = this.contextService.selectedCompany();
-    if (initialCompany) {
-      this.selectedCompany = initialCompany;
-      this.loadPeriods(initialCompany.id);
-      this.loadMasterData(initialCompany.id);
+
+    if (context && context.type === 'company') {
+      // Lock to this company
+      this.selectedCompany = { id: context.id, name: context.label };
+      this.companies = [this.selectedCompany];
+      // Load data immediately for this context
+      this.loadPeriods(context.id!);
+      this.loadMasterData(context.id);
+    } else {
+      // Global admin or no context - load all
+      this.loadCompanies();
+
+      // Use contextService selection if available and allowed
+      if (initialCompany) {
+        this.selectedCompany = initialCompany;
+        this.loadPeriods(initialCompany.id);
+        this.loadMasterData(initialCompany.id);
+      }
     }
   }
 

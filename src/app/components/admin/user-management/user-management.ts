@@ -202,9 +202,11 @@ export class UserManagementComponent implements OnInit {
   dataSource = new MatTableDataSource<any>([]);
   displayedColumns = ['name', 'email', 'role', 'status', 'actions'];
   loading = true;
+  companies: any[] = []; // List of available companies
 
   ngOnInit() {
     this.loadUsers();
+    this.loadCompanies();
   }
 
   loadUsers() {
@@ -223,13 +225,21 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
+  loadCompanies() {
+    this.adminService.getCompanies().subscribe(data => {
+      this.companies = data || [];
+    });
+  }
+
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onCreate() {
-    const dialogRef = this.dialog.open(UserDialog, { data: {} });
+    const dialogRef = this.dialog.open(UserDialog, {
+      data: { allCompanies: this.companies }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.createUser(result).subscribe(() => this.loadUsers());
@@ -238,7 +248,9 @@ export class UserManagementComponent implements OnInit {
   }
 
   onEdit(user: any) {
-    const dialogRef = this.dialog.open(UserDialog, { data: { ...user } });
+    const dialogRef = this.dialog.open(UserDialog, {
+      data: { ...user, allCompanies: this.companies }
+    });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminService.updateUser(user.id, result).subscribe(() => this.loadUsers());

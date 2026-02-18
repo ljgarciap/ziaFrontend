@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -17,11 +17,13 @@ import { Router, RouterModule } from '@angular/router';
 export class LoginComponent {
   loginForm: FormGroup;
   error: string | null = null;
+  isContextSelection = false;
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    public authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -31,15 +33,32 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
+      console.log('Login submitted...');
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
-          // Navigation handled in AuthService
+          console.log('Login success, contexts:', this.authService.availableContexts().length);
+          if (this.authService.availableContexts().length > 0) {
+            this.isContextSelection = true;
+            this.cdr.detectChanges(); // Force view update
+            console.log('Context selection enabled');
+          }
         },
         error: (err) => {
           this.error = 'Credenciales inválidas o error del servidor.';
           console.error(err);
+          this.cdr.detectChanges();
         }
       });
     }
+  }
+
+  onSelectContext(context: any) {
+    console.log('Context selected:', context);
+    // Update state without auto-navigating from service
+    this.authService.selectContext(context, false);
+
+    // Force a hard navigation to ensure clean environment (fixes "double click" issue)
+    console.log('Navigating to dashboard...');
+    window.location.replace('/dashboard');
   }
 }
