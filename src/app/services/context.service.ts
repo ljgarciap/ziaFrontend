@@ -36,4 +36,11 @@ export class ContextService {
         this.selectedPeriod.set(period);
         localStorage.setItem('zia_selected_period', JSON.stringify(period));
     }
+
+    reset() {
+        this.selectedCompany.set(null);
+        this.selectedPeriod.set(null);
+        localStorage.removeItem('zia_selected_company');
+        localStorage.removeItem('zia_selected_period');
+    }
 }

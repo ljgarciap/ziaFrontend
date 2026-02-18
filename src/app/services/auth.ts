@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { ContextService } from './context.service';
 
 export interface AuthContext {
   type: 'global' | 'company';
@@ -22,7 +23,12 @@ export class AuthService {
   currentContext = signal<AuthContext | null>(null);
   availableContexts = signal<AuthContext[]>([]);
 
-  constructor(private http: HttpClient, private router: Router, private ngZone: NgZone) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private ngZone: NgZone,
+    private contextService: ContextService
+  ) {
     const user = localStorage.getItem('user');
     const context = localStorage.getItem('context');
     const available = localStorage.getItem('available_contexts');
@@ -71,6 +77,7 @@ export class AuthService {
   }
 
   selectContext(context: AuthContext, navigate: boolean = true) {
+    this.contextService.reset();
     this.currentContext.set(context);
     localStorage.setItem('context', JSON.stringify(context));
 
@@ -105,6 +112,9 @@ export class AuthService {
     localStorage.removeItem('user');
     localStorage.removeItem('context');
     localStorage.removeItem('available_contexts');
+
+    this.contextService.reset(); // Clear dashboard selections
+
     this.currentUser.set(null);
     this.currentContext.set(null);
     this.availableContexts.set([]);

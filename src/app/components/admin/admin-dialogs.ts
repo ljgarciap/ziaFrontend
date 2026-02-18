@@ -683,3 +683,65 @@ export class ScopeDialog {
     this.dialogRef.close();
   }
 }
+
+@Component({
+  selector: 'app-period-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
+  template: `
+    <div class="zia-dialog-premium">
+      <h2 mat-dialog-title>Nuevo Periodo de Reporte</h2>
+      <mat-dialog-content>
+        <form [formGroup]="form" class="zia-form-compact">
+          <p class="dialog-description" style="color: var(--prestige-text-muted); margin-bottom: 16px; font-size: 14px;">
+            Ingresa el año fiscal para el cual esta empresa reportará su huella de carbono.
+          </p>
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Año</mat-label>
+            <input matInput formControlName="year" type="number" placeholder="Ej: 2024">
+            <mat-error *ngIf="form.get('year')?.hasError('required')">Requerido</mat-error>
+            <mat-error *ngIf="form.get('year')?.hasError('min')">Año inválido</mat-error>
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">Cancelar</button>
+        <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="onSave()">
+          Crear Periodo
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `
+})
+export class PeriodDialog {
+  form: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    public dialogRef: MatDialogRef<PeriodDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    const currentYear = new Date().getFullYear();
+    this.form = this.fb.group({
+      year: [currentYear, [Validators.required, Validators.min(2000), Validators.max(2100)]]
+    });
+  }
+
+  onSave() {
+    if (this.form.valid) {
+      this.dialogRef.close(this.form.value);
+    }
+  }
+
+  onCancel() {
+    this.dialogRef.close();
+  }
+}

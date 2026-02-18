@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AdminService } from '../../../services/admin.service';
-import { CompanyDialog, ConfirmDialog } from '../admin-dialogs';
+import { CompanyDialog, ConfirmDialog, PeriodDialog } from '../admin-dialogs';
 import { CompanyFactorSettingsDialog } from './company-factor-settings-dialog';
 
 @Component({
@@ -290,10 +290,16 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   onAddPeriod(company: any) {
-    const year = prompt('Ingrese el año del nuevo periodo:');
-    if (year && !isNaN(parseInt(year))) {
-      this.adminService.addPeriod(company.id, { year: parseInt(year), status: 'open' }).subscribe(() => this.loadCompanies());
-    }
+    const dialogRef = this.dialog.open(PeriodDialog, {
+      data: { company },
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.year) {
+        this.adminService.addPeriod(company.id, { year: result.year, status: 'open' }).subscribe(() => this.loadCompanies());
+      }
+    });
   }
 
   onDelete(company: any) {
